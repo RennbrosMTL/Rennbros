@@ -42,7 +42,8 @@ export function StructuredData({ lang }: { lang: Lang }) {
 
 /** The price list, the way search engines read prices. */
 function spec(p: Pricing) {
-  const base = { "@type": "PriceSpecification", priceCurrency: "CAD" };
+  // Renn Bros prices are before tax (GST + QST added to the bill).
+  const base = { "@type": "PriceSpecification", priceCurrency: "CAD", valueAddedTaxIncluded: false };
   switch (p.kind) {
     case "hourly":
       return { ...base, "@type": "UnitPriceSpecification", price: p.rate, unitCode: "HUR" };

@@ -167,7 +167,7 @@ export const en = {
     menu: {
       label: "The menu",
       title: "Choose what the car needs.",
-      lead: "Every price includes travel anywhere in our area. Add one service or several; the visit adds up as you go.",
+      lead: "Prices are before tax and include travel anywhere in our area. Add one service or several; the visit adds up as you go.",
       add: "Add to visit",
       added: "Added",
       details: "Details",
@@ -175,7 +175,7 @@ export const en = {
     visit: {
       title: "Your visit",
       empty: "Add a service to see the price, the time on site and the next open window.",
-      total: "Estimate",
+      total: "Estimate, before tax",
       time: "Time on site",
       travel: (time: string) => `+ ${time} travel`,
       next: "Next open window",
@@ -249,9 +249,10 @@ export const en = {
     services: {
       label: "Services",
       title: "Nine services, done at your home.",
-      lead: "Every price includes travel anywhere in our area. One-year warranty on every part we fit.",
+      lead: "Prices are before tax and include travel anywhere in our area. One-year warranty on every part we fit.",
       notesTitle: "About the prices",
       notes: [
+        ["Taxes", "All prices are before tax. GST and QST are added to your bill."],
         ["Hourly work", "Oil changes, brakes and general maintenance are $125 an hour plus parts. We confirm the parts for your car before we come."],
         ["Tires", "Other tires already on their own rims: seasonal wheel swap. Tires to change on your rims: tire change and balancing, priced by rim size for a set of four; run-flat tires +$20."],
         ["Deposit", "A deposit secures a confirmed booking and comes off your bill. See the booking terms."],
@@ -267,7 +268,7 @@ export const en = {
       warranty: "Warranty",
       oneYear: "One year",
       onParts: "On every part we fit.",
-      priceNote: { hourly: "Parts extra, confirmed for your car before we come.", call: "Per call. Travel included.", range: "Travel included. The exact figure is confirmed before we come.", tiers: "A set of four, by rim size. Travel included." },
+      priceNote: { hourly: "Parts and tax extra; parts confirmed for your car before we come.", call: "Per call, plus tax. Travel included.", range: "Plus tax, travel included. The exact figure is confirmed before we come.", tiers: "A set of four, by rim size. Plus tax, travel included." },
       byRim: "By rim size, set of 4",
       runFlat: "Run-flat tires",
       which: "Which tire service do I need?",
@@ -360,7 +361,7 @@ export const en = {
         ["Late cancellations and missed visits", "If you cancel within 24 hours, or we arrive and can't reach the car (no one home, no keys, no safe place to work), the deposit is kept to cover the time and travel set aside for you. Parts ordered specially for your car that can't be returned are charged at cost."],
         ["If we need to reschedule", "Parts delays, illness or unsafe weather can move a visit. We tell you as early as we can, and you choose a new time or a full refund of your deposit. You never pay for a change we make."],
         ["Weather", "We work outdoors, in your driveway. Heavy rain, snow or extreme cold can make some jobs unsafe; we call you before setting out, and moving the visit costs you nothing."],
-        ["On the day", "The price we confirm is the price you pay for that work. If we find something else, we show you and ask before doing any extra work. The balance is paid when the work is done, by card or tap, and your invoice arrives by email."],
+        ["On the day", "The price we confirm is the price you pay for that work, plus GST and QST. If we find something else, we show you and ask before doing any extra work. The balance is paid when the work is done, by card or tap, and your invoice arrives by email."],
         ["Questions", "Call or write to us:"],
       ] as [string, string][],
       or: "or",
@@ -402,7 +403,7 @@ export const en = {
     service: {
       label: "Service",
       help: "Choose one or more. The times add up, and travel is counted once.",
-      total: (price: string, time: string) => `${price} · about ${time} on site, travel included`,
+      total: (price: string, time: string) => `${price} before tax · about ${time} on site, travel included`,
       totalFrom: "from",
     },
     where: {

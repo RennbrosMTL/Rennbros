@@ -170,7 +170,7 @@ export const fr: Dict = {
     menu: {
       label: "Le menu",
       title: "Choisissez ce dont la voiture a besoin.",
-      lead: "Chaque prix comprend le déplacement partout sur notre territoire. Ajoutez un service ou plusieurs; la visite se calcule au fur et à mesure.",
+      lead: "Les prix sont avant taxes et comprennent le déplacement partout sur notre territoire. Ajoutez un service ou plusieurs; la visite se calcule au fur et à mesure.",
       add: "Ajouter à la visite",
       added: "Ajouté",
       details: "Détails",
@@ -178,7 +178,7 @@ export const fr: Dict = {
     visit: {
       title: "Votre visite",
       empty: "Ajoutez un service pour voir le prix, le temps sur place et la prochaine plage libre.",
-      total: "Estimation",
+      total: "Estimation, avant taxes",
       time: "Temps sur place",
       travel: (time: string) => `+ ${time} de déplacement`,
       next: "Prochaine plage libre",
@@ -252,9 +252,10 @@ export const fr: Dict = {
     services: {
       label: "Services",
       title: "Neuf services, faits chez vous.",
-      lead: "Chaque prix comprend le déplacement partout sur notre territoire. Garantie d’un an sur chaque pièce posée.",
+      lead: "Les prix sont avant taxes et comprennent le déplacement partout sur notre territoire. Garantie d’un an sur chaque pièce posée.",
       notesTitle: "À propos des prix",
       notes: [
+        ["Taxes", "Tous les prix sont avant taxes. La TPS et la TVQ s’ajoutent à votre facture."],
         ["Travail à l’heure", "Changements d’huile, freins et entretien général : 125 $ l’heure, plus les pièces. Nous confirmons les pièces pour votre véhicule avant de venir."],
         ["Pneus", "Autres pneus déjà sur leurs propres jantes : permutation de roues saisonnière. Pneus à changer sur vos jantes : changement de pneus et équilibrage, prix selon la taille des jantes pour un ensemble de 4; pneus à roulage à plat +20 $."],
         ["Dépôt", "Un dépôt garantit une réservation confirmée et est déduit de votre facture. Voir les conditions de réservation."],
@@ -270,7 +271,7 @@ export const fr: Dict = {
       warranty: "Garantie",
       oneYear: "Un an",
       onParts: "Sur chaque pièce posée.",
-      priceNote: { hourly: "Pièces en sus, confirmées pour votre véhicule avant notre arrivée.", call: "Par appel. Déplacement compris.", range: "Déplacement compris. Le montant exact est confirmé avant notre arrivée.", tiers: "Ensemble de 4, selon la taille des jantes. Déplacement compris." },
+      priceNote: { hourly: "Pièces et taxes en sus; pièces confirmées pour votre véhicule avant notre arrivée.", call: "Par appel, taxes en sus. Déplacement compris.", range: "Taxes en sus, déplacement compris. Le montant exact est confirmé avant notre arrivée.", tiers: "Ensemble de 4, selon la taille des jantes. Taxes en sus, déplacement compris." },
       byRim: "Selon la taille des jantes, ensemble de 4",
       runFlat: "Pneus à roulage à plat",
       which: "Quel service de pneus me faut-il?",
@@ -363,7 +364,7 @@ export const fr: Dict = {
         ["Annulations tardives et visites manquées", "Si vous annulez moins de 24 heures avant, ou si nous arrivons et ne pouvons pas accéder au véhicule (personne sur place, pas de clés, pas d’endroit sécuritaire pour travailler), le dépôt est conservé pour couvrir le temps et le déplacement prévus pour vous. Les pièces commandées spécialement pour votre véhicule et non retournables sont facturées au prix coûtant."],
         ["Si nous devons déplacer la visite", "Un retard de pièces, une maladie ou une météo dangereuse peuvent déplacer une visite. Nous vous prévenons le plus tôt possible, et vous choisissez une nouvelle date ou le remboursement complet de votre dépôt. Vous ne payez jamais pour un changement de notre part."],
         ["Météo", "Nous travaillons dehors, dans votre entrée. Une forte pluie, la neige ou un froid extrême peuvent rendre certains travaux dangereux; nous vous appelons avant de partir, et déplacer la visite ne vous coûte rien."],
-        ["Le jour de la visite", "Le prix confirmé est le prix que vous payez pour ce travail. Si nous trouvons autre chose, nous vous le montrons et vous demandons avant tout travail supplémentaire. Le solde se paie une fois le travail terminé, par carte ou paiement sans contact, et votre facture arrive par courriel."],
+        ["Le jour de la visite", "Le prix confirmé est le prix que vous payez pour ce travail, plus la TPS et la TVQ. Si nous trouvons autre chose, nous vous le montrons et vous demandons avant tout travail supplémentaire. Le solde se paie une fois le travail terminé, par carte ou paiement sans contact, et votre facture arrive par courriel."],
         ["Questions", "Appelez-nous ou écrivez-nous :"],
       ] as [string, string][],
       or: "ou",
@@ -405,7 +406,7 @@ export const fr: Dict = {
     service: {
       label: "Service",
       help: "Choisissez-en un ou plusieurs. Les durées s’additionnent, et le déplacement n’est compté qu’une fois.",
-      total: (price: string, time: string) => `${price} · environ ${time} sur place, déplacement inclus`,
+      total: (price: string, time: string) => `${price} avant taxes · environ ${time} sur place, déplacement inclus`,
       totalFrom: "à partir de",
     },
     where: {
