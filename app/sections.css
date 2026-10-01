@@ -333,7 +333,11 @@ html.js .smap__check { display: grid; }
 .rv__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem 2rem; padding-inline: clamp(1.5rem, 3.5vw, 2.5rem); }
 .rv__title { display: grid; gap: 0.5rem; }
 .rv__title .label { color: #c9ccd2; }
-.rv__meta { display: flex; align-items: center; gap: 1rem; }
+.rv__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+.rv__score { font-size: 0.9375rem; color: #e4e6ea; }
+.rv__google { display: inline-flex; align-items: center; gap: 0.3rem; color: #f1f2f4; font-size: 0.9375rem; text-decoration: underline; text-underline-offset: 3px; }
+.rv__google:hover { color: #fff; }
+.rv__google:focus-visible { outline: 2px solid #f1f2f4; outline-offset: 3px; border-radius: 4px; }
 .rv__stars { display: inline-flex; gap: 2px; color: #f5b301; filter: drop-shadow(0 0 6px rgb(245 179 1 / 0.25)); }
 .rv__viewport {
   overflow: hidden; touch-action: pan-y; cursor: grab; padding-block: 0.75rem;

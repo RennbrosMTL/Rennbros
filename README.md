@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/readme/banner.png" alt="Renn Bros Pneu et Mécanique" width="100%"></p>
+
 # Renn Bros — website
 
 The website of **Renn Bros Pneus et Mécanique**, a mobile mechanic serving the
@@ -6,7 +8,7 @@ prices, build a visit, check that their address is covered, and request a
 booking that lands in the business's Square calendar, with an optional deposit
 paid by card.
 
-- **Live:** RennBros.com *(preview until launch: rennbros-driveway-fall.netlify.app)*
+- **Live:** [rennbros.com](https://rennbros.com)
 - **Languages:** English at clean URLs (`/services`), French under `/fr` (`/fr/services`)
 - **Built and maintained by:** Tashii White · LeadByMotion
 
@@ -112,7 +114,7 @@ from either language.
 | Any wording (both languages) | `lib/i18n/en.ts` and `lib/i18n/fr.ts` |
 | Phone, email, social links, hours, arrival windows, deposit % | `lib/business.ts` |
 | Service area towns / outline | `lib/business.ts` (town list) and `lib/area.ts` (polygon, points). Then run `npm run map:snapshot` |
-| Reviews | `lib/reviews.ts` (set `reviewsArePlaceholder = false` once they are real) |
+| Reviews | automatic: genuine Google reviews via `GOOGLE_PLACES_API_KEY` + `GOOGLE_PLACE_ID` (section hidden until set) |
 | Photos | replace files in `public/media/` with the same names and sizes |
 | Seasonal hero | switches by date on its own: winter Nov–Feb, spring Mar–May, summer Jun–Aug, fall Sep–Oct (dates in `lib/season.ts`) |
 
@@ -131,12 +133,18 @@ priced by rim size, run-flat +$20). The two are either/or everywhere.
 ## Bookings, Square and the deposit
 
 1. The booking form asks for the services, the address (with a live coverage
-   check), an arrival window (8, 11, 2, 5) from a month calendar, and the
+   check), an arrival window (8, 11, 2) from a month calendar, and the
    customer's details. Several services add up; visits that run long only
    offer windows that leave time to finish.
 2. `GET /api/availability` asks Square for open windows; `POST /api/book`
-   creates the booking in Square (with the tyre rim size and notes in the
-   booking note) and, if a deposit is set, charges it with Square's card field.
+   creates the booking in Square (rim size, notes, photo links and VIN in the
+   booking note) with a **20% deposit**: the card is held, the booking is
+   created, then the hold is captured (`lib/booking/checkout.ts`). A failed
+   booking releases the hold; retries reuse the same idempotency keys, so a
+   customer is never charged twice. `npm run test:deposit` runs 25 scenarios.
+   Customers can attach up to 4 photos (Netlify Blobs, deleted after 12
+   months) and read their VIN from a photo (barcode or OCR, check-digit
+   verified, decoded with NHTSA vPIC).
 3. The customer sees a confirmation; the business confirms the visit in Square.
 
 All of this switches on from settings alone. In **Netlify → Project
@@ -153,6 +161,8 @@ comes from, is in `.env.example`):
 | `NEXT_PUBLIC_SQUARE_APP_ID` | no | Application ID (card field) |
 | `NEXT_PUBLIC_SQUARE_LOCATION_ID` | no | same Location ID |
 | `NEXT_PUBLIC_SQUARE_ENVIRONMENT` | no | `production` |
+| `GOOGLE_PLACES_API_KEY` | **yes** | Places API (New) key, restricted to that API |
+| `GOOGLE_PLACE_ID` | no | the Google Business Profile's Place ID |
 | `HERO_SEASON_OVERRIDE` | no | pin one hero: `winter`, `spring`, `summer` or `fall` (leave unset for the automatic switch) |
 
 `NEXT_PUBLIC_*` settings are read when the site is built: **redeploy** after
@@ -166,10 +176,19 @@ lives in Netlify's settings: never in the code, a commit, a chat or an email.
 
 ## Deploying
 
-Netlify builds from this repository (`netlify.toml`: `npm run build`, Node 22,
-Next.js runtime). Every push to the main branch deploys automatically.
+`main` is the source of truth. Every release is committed and pushed here
+first, then deployed to Netlify from a clean checkout of that exact commit:
 
-**Before going live on RennBros.com**, run the launch check:
+```bash
+git worktree add --detach ../rb-deploy <commit>
+cd ../rb-deploy && npm ci
+npx netlify deploy --build --prod --site <site-id> --message "<commit>"
+```
+
+Automatic Git builds are paused on Netlify: on the current plan, builds from a
+private repository only run for commits by Netlify team members.
+
+To check for anything still unfinished, run:
 
 ```bash
 npm run launch-check
@@ -188,6 +207,7 @@ Start the site (`npm run dev`), then in another terminal:
 
 | Command | What it checks |
 |---|---|
+| `npm run test:deposit` | deposit amounts and payment scenarios (hold, book, capture, release, retries) |
 | `npm run typecheck` | TypeScript, both languages complete |
 | `npm run test:book` | the whole booking form, English and French, with and without JavaScript, plus the API rules |
 | `npm run test:visit` | building a visit, the map, a town pin |
@@ -216,8 +236,15 @@ the machine (`CHROME_PATH` to override).
   AVIF/WebP at the right size.
 - **Saves to a phone's home screen** like an app (`public/site.webmanifest`,
   app icons in `public/`).
-- **No car brand logos** anywhere in the imagery: photos are generated
-  stand-ins until the Renn Bros photo shoot, with every badge removed.
+- **No car brand logos** anywhere in the imagery; placeholder photography
+  until the Renn Bros photo shoot.
+
+## Brand
+
+<p align="center"><img src="docs/readme/palette.png" alt="Renn Bros palette: red #c8161d, deep red #a8121a, graphite #1f2227, slate #474b53, steel #666b74, silver #c9ccd1, mist #eceef0, paper #f5f6f7" width="100%"></p>
+
+Tokens live in `app/globals.css` (light and dark). The RB mark is
+`public/brand/rb-solid.svg`.
 
 ---
 

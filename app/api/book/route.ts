@@ -2,6 +2,7 @@ import { provider, earliest, timing, schedule, pickServices } from "@/lib/bookin
 import { toSquareAddress } from "@/lib/booking/address";
 import { depositCents, estimateOf } from "@/lib/booking/deposit";
 import { checkout, DepositDeclined } from "@/lib/booking/checkout";
+import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
 import { isRim } from "@/lib/services";
 import { business } from "@/lib/business";
 import { href, type Lang } from "@/lib/i18n";
@@ -77,6 +78,9 @@ export async function POST(request: Request) {
   const rimRaw = s("rim");
   const rim = isRim(rimRaw) ? rimRaw : undefined;
   const runFlat = !!s("runflat");
+  // Photos uploaded with the form: only well-formed ids, at most four.
+  const site = new URL(request.url).origin;
+  const photoLinks = s("photos").split(",").filter((id) => PHOTO_ID.test(id)).slice(0, MAX_PHOTOS).map((id) => `${site}/api/photo/${id}`);
   const note = [
     `Services: ${slugs.join(", ")} (about ${minutes} min with travel)`,
     slugs.includes("tire-install") && `Tires to mount and balance: rim ${rim ? `${rim}"` : "size not given"}${runFlat ? ", run-flat (+$20)" : ""}`,
@@ -86,6 +90,7 @@ export async function POST(request: Request) {
     s("vin") && `VIN: ${s("vin")}`,
     lang === "fr" && "Language: French — reply in French",
     s("notes") && `Notes: ${s("notes")}`,
+    photoLinks.length > 0 && `Photos:\n${photoLinks.join("\n")}`,
   ].filter(Boolean).join("\n");
 
   // The deposit: recomputed here from the services, never taken from the browser.

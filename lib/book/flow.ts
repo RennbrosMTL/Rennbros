@@ -10,6 +10,8 @@ import { center, covered } from "@/lib/area";
 import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
 import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
 import { depositCents, estimateOf } from "@/lib/booking/deposit";
+import { cleanVin, decodeVin, isValidVin, readVin } from "@/lib/book/vin";
+import { MAX_PHOTOS } from "@/lib/booking/photos";
 
 type Slot = { startAt: string; minutes: number; segments?: unknown[] };
 type Config = {
@@ -505,6 +507,113 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     document.head.append(s);
   }
 
+  // --- VIN from a photo ---------------------------------------------------
+  const vinInput = form.querySelector<HTMLInputElement>('[name="vin"]')!;
+  const vinStatus = $("[data-vin-status]");
+  $("[data-vin-scan]").hidden = false;
+  /** Fill year, make and model from a good VIN, without overwriting what's typed. */
+  const fillFromVin = async (vin: string) => {
+    const car = await decodeVin(vin);
+    const set = (name: string, v?: string) => {
+      const f = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+      if (f && v && !f.value.trim()) { f.value = v; f.dispatchEvent(new Event("input", { bubbles: true })); }
+    };
+    set("year", car.year);
+    set("make", car.make);
+    set("model", car.model);
+    return [car.year, car.make, car.model].filter(Boolean).join(" ");
+  };
+  $<HTMLInputElement>("[data-vin-photo]").addEventListener("change", async (e) => {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    vinStatus.textContent = b.you.vinReading;
+    try {
+      const got = await readVin(file);
+      if (!got) { vinStatus.textContent = b.you.vinNone; return; }
+      vinInput.value = got.vin;
+      vinInput.dispatchEvent(new Event("input", { bubbles: true }));
+      let msg = got.checked ? b.you.vinRead(got.vin) : b.you.vinUnsure(got.vin);
+      if (got.checked) {
+        const car = await fillFromVin(got.vin);
+        if (car) msg += ` ${b.you.vinDecoded(car)}`;
+      }
+      vinStatus.textContent = msg;
+    } catch (err) {
+      console.error("[vin]", err);
+      vinStatus.textContent = b.you.vinNone;
+    }
+  });
+  // Typed or pasted: decode once it's a valid VIN.
+  let decodedVin = "";
+  vinInput.addEventListener("input", async () => {
+    const v = cleanVin(vinInput.value);
+    if (v !== decodedVin && isValidVin(v)) {
+      decodedVin = v;
+      await fillFromVin(v);
+    }
+  });
+
+  // --- Photos ---------------------------------------------------------------
+  const photoBox = $("[data-photos]");
+  const photoList = $("[data-photo-list]");
+  const photoStatus = $("[data-photo-status]");
+  const photoField = form.querySelector<HTMLInputElement>('[name="photos"]')!;
+  const photos: { id: string; url: string }[] = [];
+  let uploading = 0;
+  photoBox.hidden = false;
+  /** Phone photos are 3–8 MB; shrink to 1600 px JPEG (~300 KB) before upload. */
+  const shrink = async (file: File): Promise<Blob> => {
+    const img = await createImageBitmap(file);
+    const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * k);
+    c.height = Math.round(img.height * k);
+    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    return new Promise((res, rej) => c.toBlob((bl) => (bl ? res(bl) : rej(new Error("encode"))), "image/jpeg", 0.82));
+  };
+  const drawPhotos = () => {
+    photoField.value = photos.map((p) => p.id).join(",");
+    photoList.replaceChildren(
+      ...photos.map((p, i) => {
+        const li = document.createElement("li");
+        li.className = "photos__item";
+        const img = Object.assign(document.createElement("img"), { src: p.url, alt: "" });
+        const rm = Object.assign(document.createElement("button"), { type: "button", className: "photos__rm", textContent: "×" });
+        rm.setAttribute("aria-label", b.you.photoRemove(i + 1));
+        rm.addEventListener("click", () => { URL.revokeObjectURL(p.url); photos.splice(i, 1); drawPhotos(); });
+        li.append(img, rm);
+        return li;
+      }),
+    );
+  };
+  $<HTMLInputElement>("[data-photo-input]").addEventListener("change", async (e) => {
+    const input = e.currentTarget as HTMLInputElement;
+    const files = [...(input.files ?? [])];
+    input.value = "";
+    const room = MAX_PHOTOS - photos.length - uploading;
+    if (files.length > room) photoStatus.textContent = b.you.photosMax;
+    for (const file of files.slice(0, Math.max(0, room))) {
+      uploading++;
+      if (!photoStatus.textContent) photoStatus.textContent = b.you.photoUploading;
+      try {
+        const blob = await shrink(file);
+        const r = await fetch("/api/photo", { method: "POST", headers: { "content-type": "image/jpeg" }, body: blob });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data.id) throw new Error(data.error ?? String(r.status));
+        photos.push({ id: data.id, url: URL.createObjectURL(blob) });
+        drawPhotos();
+        if (photoStatus.textContent === b.you.photoUploading) photoStatus.textContent = "";
+      } catch (err) {
+        console.error("[photo]", err);
+        photoStatus.textContent = b.you.photoFailed;
+      } finally {
+        uploading--;
+      }
+    }
+  });
+
   // --- Send ---------------------------------------------------------------
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -516,6 +625,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     const label = submit.innerHTML;
     submit.textContent = b.confirm.sending;
     try {
+      // Let photo uploads finish (up to 20 s) so their links reach the booking.
+      for (let i = 0; uploading > 0 && i < 40; i++) await new Promise((r) => setTimeout(r, 500));
       const body: Record<string, unknown> = {};
       new FormData(form).forEach((v, k) => typeof v === "string" && k !== "service" && k !== "remember" && (body[k] = v));
       body.services = picked();

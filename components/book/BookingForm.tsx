@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, CalendarBlank, CaretLeft, CaretRight, Check, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, Camera, Image as ImageIcon, CaretLeft, CaretRight, Check, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
@@ -191,11 +191,31 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <input className="input" name="vin" maxLength={17} autoCapitalize="characters" spellCheck={false} />
               <span className="help">{b.you.vinHelp}</span>
             </label>
+            <div className="scan" data-vin-scan hidden>
+              <label className="btn btn--ghost btn--sm scan__btn">
+                <Camera size={18} weight="light" aria-hidden />
+                {b.you.vinScan}
+                <input className="sr-only" type="file" accept="image/*" capture="environment" data-vin-photo />
+              </label>
+              <span className="help scan__status" data-vin-status aria-live="polite" />
+            </div>
             <label className="field">
               <span>{b.you.notes} <em className="opt">({b.you.optional})</em></span>
               <textarea className="input" name="notes" rows={3} />
               <span className="help">{b.you.notesHelp}</span>
             </label>
+            <div className="field photos" data-photos hidden>
+              <span id="photos-label">{b.you.photos} <em className="opt">({b.you.optional})</em></span>
+              <ul className="photos__list" data-photo-list aria-labelledby="photos-label" />
+              <label className="btn btn--ghost btn--sm scan__btn photos__add">
+                <ImageIcon size={18} weight="light" aria-hidden />
+                {b.you.photosAdd}
+                <input className="sr-only" type="file" accept="image/*" multiple data-photo-input />
+              </label>
+              <span className="help">{b.you.photosHelp}</span>
+              <span className="help" data-photo-status aria-live="polite" />
+              <input type="hidden" name="photos" />
+            </div>
             <label className="remember" data-remember hidden>
               <input type="checkbox" name="remember" defaultChecked />
               <span>{b.remember.label}<span className="help">{b.remember.help}</span></span>
@@ -218,7 +238,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
             {business.booking.depositPercent ? (
               <div className="note deposit" data-deposit>
                 <p className="deposit__due num" data-deposit-due>{b.confirm.depositSet(`${business.booking.depositPercent}%`)}</p>
-                <p>{b.confirm.depositRest}</p>
+                <p>{b.confirm.depositRest} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.policy}</a></p>
               </div>
             ) : (
               <p className="note">{b.confirm.depositUnset}</p>
@@ -228,7 +248,9 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <div id="card-field" className="card__field" />
               <p className="help">{b.confirm.cardSecure}</p>
             </div>
-            <p className="note">{cancel ? b.confirm.cancelSet(cancel) : b.confirm.cancelUnset} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.terms}</a></p>
+            {!business.booking.depositPercent && (
+              <p className="note">{cancel ? b.confirm.cancelSet(cancel) : b.confirm.cancelUnset} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.terms}</a></p>
+            )}
           </fieldset>
 
           <div className="nav">

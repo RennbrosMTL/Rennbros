@@ -5,6 +5,7 @@ import { heroMediaFor } from "@/lib/season";
 import { Menu } from "@/components/menu/Menu";
 import { Marquee, Steps, Area, FaqTeaser, Closing } from "@/components/home/Sections";
 import { ReviewsReel } from "@/components/home/ReviewsReel";
+import { googleReviews } from "@/lib/reviews";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -20,6 +21,8 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const lang = (await params).lang as Lang;
   const t = dict(lang);
   const m = t.home.menu;
+  // Genuine Google reviews only; the section is left out until there are some.
+  const reviews = await googleReviews(lang);
   const month = new Date().getMonth();
   return (
     <>
@@ -39,7 +42,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
       <Steps lang={lang} />
       <Area lang={lang} />
-      <ReviewsReel lang={lang} />
+      {reviews && <ReviewsReel lang={lang} data={reviews} />}
       <FaqTeaser lang={lang} />
       <Closing lang={lang} />
     </>

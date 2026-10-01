@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Star } from "@phosphor-icons/react";
-import { reviews } from "@/lib/reviews";
-import { dict, town, type Lang } from "@/lib/i18n";
+import { ArrowUpRight, Star } from "@phosphor-icons/react";
+import type { ReviewSummary } from "@/lib/reviews";
+import { dict, type Lang } from "@/lib/i18n";
 
 /**
  * Reviews as a reel: a compact graphite panel over a slow WebGL "machined
@@ -15,7 +15,8 @@ import { dict, town, type Lang } from "@/lib/i18n";
  * button, 2026-09-27); the shader pauses off-screen and in background tabs; with
  * reduced motion nothing drifts and the row is simply scrollable.
  */
-export function ReviewsReel({ lang }: { lang: Lang }) {
+export function ReviewsReel({ lang, data }: { lang: Lang; data: ReviewSummary }) {
+  const reviews = data.reviews;
   const t = dict(lang);
   const v = t.home.voices;
   const r = t.home.reel;
@@ -213,11 +214,11 @@ void main(){
 
   const card = (rv: (typeof reviews)[number], copy: number, i: number) => (
     <li key={`${copy}-${i}`} className="rv__card" aria-hidden={copy > 0 ? true : undefined}>
-      <span className="rv__stars" role="img" aria-label={r.stars}>
-        {[0, 1, 2, 3, 4].map((s) => <Star key={s} size={12} weight="fill" aria-hidden />)}
+      <span className="rv__stars" role="img" aria-label={r.stars(rv.rating)}>
+        {[0, 1, 2, 3, 4].map((s) => <Star key={s} size={12} weight={s < rv.rating ? "fill" : "regular"} aria-hidden />)}
       </span>
-      <blockquote className="rv__quote">{rv.quote[lang]}</blockquote>
-      <p className="rv__who"><span>{rv.name}</span> · {town(lang, rv.town)}</p>
+      <blockquote className="rv__quote">{rv.text}</blockquote>
+      <p className="rv__who"><span>{rv.author}</span>{rv.when && <> · {rv.when}</>}</p>
     </li>
   );
 
@@ -231,9 +232,15 @@ void main(){
             <h2 className="d3" id="rv-title">{v.title}</h2>
           </div>
           <div className="rv__meta">
-            <span className="rv__stars rv__stars--big" role="img" aria-label={r.stars}>
-              {[0, 1, 2, 3, 4].map((s) => <Star key={s} size={18} weight="fill" aria-hidden />)}
+            <span className="rv__stars rv__stars--big" role="img" aria-label={r.stars(data.rating)}>
+              {[0, 1, 2, 3, 4].map((s) => <Star key={s} size={18} weight={s < Math.round(data.rating) ? "fill" : "regular"} aria-hidden />)}
             </span>
+            <span className="rv__score num">{r.summary(data.rating.toFixed(1), data.count)}</span>
+            {data.url && (
+              <a className="rv__google" href={data.url} target="_blank" rel="noopener noreferrer">
+                {r.onGoogle}<ArrowUpRight size={14} weight="bold" aria-hidden />
+              </a>
+            )}
           </div>
         </div>
         <div ref={viewport} className={`rv__viewport${still ? " is-still" : ""}`} tabIndex={0} aria-label={v.title}>

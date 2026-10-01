@@ -49,3 +49,6 @@ next-env.d.ts
 /.next*/
 /.claude/
 /.impeccable/
+
+# Tool logs
+*.log

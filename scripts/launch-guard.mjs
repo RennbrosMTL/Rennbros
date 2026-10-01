@@ -19,7 +19,8 @@ const env = process.env;
 const block = [];
 const note = [];
 
-if (/reviewsArePlaceholder = true/.test(reviews)) block.push("Reviews are written placeholders. Replace with genuine reviews in lib/reviews.ts and set reviewsArePlaceholder = false.");
+if (/reviewsArePlaceholder|placeholder: true/.test(reviews)) block.push("lib/reviews.ts holds written reviews. Only genuine Google reviews may be published.");
+if (!env.GOOGLE_PLACES_API_KEY || !env.GOOGLE_PLACE_ID) note.push("Google reviews are off (GOOGLE_PLACES_API_KEY, GOOGLE_PLACE_ID): the reviews section is hidden.");
 if (/phone: \{[^}]*isPlaceholder: true/.test(business)) block.push("Phone number is the placeholder (514) 555-0142. Set the real number in lib/business.ts.");
 if (/area: \{\s*[^]*?isPlaceholder: true/.test(business)) block.push("Service area is pending the owner's confirmation. Confirm towns and outline (lib/business.ts, lib/area.ts).");
 if (/social: \{\s*isPlaceholder: true/.test(business)) block.push("Social links point at platform home pages. Set the real profile URLs in lib/business.ts (social.links) and isPlaceholder: false.");

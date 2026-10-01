@@ -28,9 +28,18 @@ for (const path of paths) {
   p.on("response", (r) => { if (r.status() >= 400 && !r.url().endsWith("/this-page-does-not-exist")) errs.push(`${r.status()} ${r.url().replace(BASE, "")}`); });
   p.on("requestfailed", (r) => { const f = r.failure()?.errorText ?? ""; if (!/ERR_ABORTED/.test(f)) errs.push(`failed ${r.url().replace(BASE, "").slice(0, 100)} ${f}`); });
   const res = await p.goto(BASE + path, { waitUntil: "networkidle2", timeout: 90000 }).catch((e) => (errs.push(`goto: ${e.message}`), null));
-  await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  // A page that navigates by itself after load (it shouldn't) is reported, not fatal.
+  const startUrl = p.url();
+  const settle = async (fn) => {
+    for (let i = 0; i < 3; i++) {
+      try { return await p.evaluate(fn); } catch { await new Promise((r) => setTimeout(r, 1500)); }
+    }
+    throw new Error(`page kept navigating: ${p.url()}`);
+  };
+  await settle(() => window.scrollTo(0, document.body.scrollHeight));
   await new Promise((r) => setTimeout(r, 1500));
-  const info = await p.evaluate(() => ({
+  if (p.url() !== startUrl) errs.push(`navigated by itself to ${p.url().replace(BASE, "")}`);
+  const info = await settle(() => ({
     title: document.title,
     desc: document.querySelector('meta[name="description"]')?.content ?? "",
     h1: document.querySelectorAll("h1").length,

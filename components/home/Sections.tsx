@@ -1,6 +1,5 @@
 import { ArrowRight, Phone } from "@phosphor-icons/react/dist/ssr";
 import { business } from "@/lib/business";
-import { reviews, reviewsArePlaceholder } from "@/lib/reviews";
 import { dict, href, town, type Lang } from "@/lib/i18n";
 import { ServiceMap } from "@/components/map/ServiceMap";
 
@@ -72,30 +71,6 @@ export function Area({ lang }: { lang: Lang }) {
         {business.area.isPlaceholder && <p className="area__pending"><span className="tag">{t.draft}</span> {a.pending}</p>}
       </div>
       <ServiceMap lang={lang} />
-    </section>
-  );
-}
-
-export function Reviews({ lang }: { lang: Lang }) {
-  const t = dict(lang);
-  const v = t.home.voices;
-  return (
-    <section className="voices section" aria-labelledby="voices-title">
-      <div className="page voices__head" data-reveal>
-        <p className="label label--red">{v.label}</p>
-        <h2 className="d2" id="voices-title">{v.title}</h2>
-        {reviewsArePlaceholder && <p className="voices__note"><span className="tag">{t.reviewsNote}</span>{v.placeholder}</p>}
-      </div>
-      <ul className="voices__row" tabIndex={0} aria-labelledby="voices-title">
-        {reviews.map((r) => (
-          <li key={r.name} className="voice">
-            <blockquote>
-              <p className="voice__quote">{r.quote[lang]}</p>
-              <footer className="voice__who"><span>{r.name}</span><span className="soft">{town(lang, r.town)}</span></footer>
-            </blockquote>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
