@@ -174,6 +174,7 @@ p { max-width: 62ch; }
 
 /* --- Fields ---------------------------------------------------------------------- */
 .field { display: grid; gap: 0.4rem; }
+.field--short .input { max-width: 11rem; text-transform: uppercase; }
 .field > span:first-child { font-size: 0.9375rem; font-weight: 500; color: var(--color-ink-2); }
 .input {
   width: 100%; min-height: 52px; padding: 0.8rem 1rem; font: inherit; font-size: 1.0625rem; color: var(--color-ink);

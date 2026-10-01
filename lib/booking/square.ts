@@ -18,6 +18,8 @@
  * touches the site. Availability ranges must be 24 hours to 32 days long.
  */
 
+import type { SquareAddress } from "./address";
+
 export const SQUARE_VERSION = "2026-09-16";
 export const TIME_ZONE = "America/Toronto"; // Montréal's IANA zone
 
@@ -55,7 +57,10 @@ export type BookInput = {
   slugs: string[];
   slot: Slot;
   customer: { givenName: string; familyName?: string; email: string; phone: string };
+  /** As typed, for the note. */
   address: string;
+  /** Structured, for Square (null when we couldn't be sure of city or postal code). */
+  place: SquareAddress | null;
   note: string;
   lang: "en" | "fr";
 };
@@ -264,21 +269,32 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
           };
         }),
       );
-      const r = await call<{ booking: { id: string; status: string } }>("/v2/bookings", {
-        body: {
-          idempotency_key: uuid(),
-          booking: {
-            start_at: input.slot.startAt,
-            location_id: env.locationId,
-            customer_id: customerId,
-            // The work happens at the customer's address, not at a shop.
-            location_type: "CUSTOMER_LOCATION",
-            address: { address_line_1: input.address },
-            customer_note: input.note.slice(0, 4096),
-            appointment_segments: segments,
+      const create = (where: object) =>
+        call<{ booking: { id: string; status: string } }>("/v2/bookings", {
+          body: {
+            idempotency_key: uuid(),
+            booking: {
+              start_at: input.slot.startAt,
+              location_id: env.locationId,
+              customer_id: customerId,
+              ...where,
+              customer_note: input.note.slice(0, 4096),
+              appointment_segments: segments,
+            },
           },
-        },
-      });
+        });
+      // The work happens at the customer's address: send it as Square wants it
+      // (street, city, province, postal code). If Square still refuses the
+      // address, book anyway: the address is in the note, and no customer's
+      // booking should fail over address formatting.
+      let r: { booking: { id: string; status: string } };
+      try {
+        r = input.place ? await create({ location_type: "CUSTOMER_LOCATION", address: input.place }) : await create({});
+      } catch (e) {
+        if (!(input.place && e instanceof SquareError && e.status === 400 && JSON.stringify(e.detail).includes("address"))) throw e;
+        console.warn("[book] Square refused the address; booking with the address in the note", JSON.stringify(e.detail));
+        r = await create({});
+      }
       const status = r.booking.status === "ACCEPTED" ? "ACCEPTED" : "PENDING";
       return { id: r.booking.id, status, customerId };
     },

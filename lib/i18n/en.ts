@@ -18,7 +18,7 @@ export const en = {
     homeTitle: "Renn Bros — Car care at your home, West Island & Vaudreuil⁠-Soulanges",
     homeDescription:
       "Oil changes, tires, brakes, batteries and diagnostics, done properly at your home across the West Island and Vaudreuil⁠-Soulanges. One-year warranty on every part.",
-    services: ["Services and prices", "Seven services done at your address, every price shown up front with travel included."],
+    services: ["Services and prices", "Nine services done at your address, every price shown up front with travel included."],
     how: ["How it works", "How a Renn Bros visit works: book in two minutes, a personal confirmation, the work done in your driveway, keys back with the old parts shown."],
     area: ["Service area", "Renn Bros works across the West Island and Vaudreuil⁠-Soulanges, from Rigaud to Dorval and from Île Bizard to Valleyfield."],
     faq: ["FAQ", "How booking works, what we need from you, the warranty, and the jobs we don't take."],
@@ -409,6 +409,7 @@ export const en = {
     where: {
       address: "Address where the car is parked",
       addressHelp: "Street and town. We check it against our area as you go.",
+      postal: "Postal code",
       parking: "Where is it parked?",
       parkingOptions: ["Driveway", "Garage", "Street", "Office parking"],
       parkingHelp: "It decides whether the job can be done when we arrive.",
@@ -465,6 +466,7 @@ export const en = {
     invalid: {
       service: "Choose at least one service.",
       address: "Enter the address where the car will be.",
+      postal: "Enter a postal code like H9W 5L6.",
       parking: "Tell us where it's parked.",
       slot: "Choose an arrival window.",
       name: "Enter your name.",

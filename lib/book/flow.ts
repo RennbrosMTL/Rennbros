@@ -88,7 +88,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   // --- Validation, one step at a time ------------------------------------
   const rules: Record<number, [string, (v: string) => boolean][]> = {
     0: [["service", () => picked().length > 0], ["rim", () => !picked().includes("tire-install") || !!rim()]],
-    1: [["address", (v) => v.length > 4], ["parking", (v) => !!v]],
+    1: [["address", (v) => v.length > 4], ["postal", (v) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim())], ["parking", (v) => !!v]],
     2: [["slot", () => !!value("startAt")]],
     3: [
       ["name", (v) => v.length > 1],
@@ -198,7 +198,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   // Saved only in this browser (localStorage), only after a booking goes
   // through with "Remember my details" ticked; never sent anywhere else.
   const REMEMBER_KEY = "rennbros.details";
-  const REMEMBERED = ["name", "phone", "email", "address", "parking", "year", "make", "model", "vin"];
+  const REMEMBERED = ["name", "phone", "email", "address", "postal", "parking", "year", "make", "model", "vin"];
   const rememberBox = form.querySelector<HTMLInputElement>('[name="remember"]');
   const welcome = form.querySelector<HTMLElement>("[data-remembered]");
   const rememberRow = form.querySelector<HTMLElement>("[data-remember]");
@@ -450,7 +450,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     const car = [value("year"), value("make"), value("model")].filter(Boolean).join(" ");
     const rows = [
       list.length ? `${list.map((s) => s.name).join(" + ")} · ${totals(list)}` : "",
-      `${value("address")} · ${value("parking")}`,
+      `${[value("address"), value("postal").toUpperCase()].filter(Boolean).join(", ")} · ${value("parking")}`,
       value("startAt") ? when(value("startAt")) : "",
       car + (value("vin") ? ` · ${value("vin").toUpperCase()}` : ""),
       [value("name"), value("phone"), value("email")].filter(Boolean).join(" · "),

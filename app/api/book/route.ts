@@ -1,4 +1,5 @@
 import { provider, earliest, timing, schedule, pickServices } from "@/lib/booking/config";
+import { toSquareAddress } from "@/lib/booking/address";
 import { bySlug, isRim, mountPrice } from "@/lib/services";
 import { business } from "@/lib/business";
 import { href, type Lang } from "@/lib/i18n";
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 
   // --- validate ------------------------------------------------------------
   const slugs = pickServices(serviceList);
-  const missing = ["address", "parking", "name", "phone", "email", "make", "model"].filter((k) => !s(k));
+  const missing = ["address", "postal", "parking", "name", "phone", "email", "make", "model"].filter((k) => !s(k));
   if (!slugs || missing.length) return fail(request, lang, "missing_fields", 400, isJSON, { missing });
   if (!/^\S+@\S+\.\S+$/.test(s("email"))) return fail(request, lang, "email", 400, isJSON);
   const minutes = timing.total(slugs);
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
   const note = [
     `Services: ${slugs.join(", ")} (about ${minutes} min with travel)`,
     slugs.includes("tire-install") && `Tires to mount and balance: rim ${rim ? `${rim}"` : "size not given"}${runFlat ? ", run-flat (+$20)" : ""}`,
+    `Address: ${[s("address"), s("postal").toUpperCase()].filter(Boolean).join(", ")}`,
     `Parking: ${s("parking")}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
     s("vin") && `VIN: ${s("vin")}`,
@@ -89,6 +91,7 @@ export async function POST(request: Request) {
       slot,
       customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone") },
       address: s("address"),
+      place: toSquareAddress(s("address"), s("postal")),
       note,
       lang,
     });

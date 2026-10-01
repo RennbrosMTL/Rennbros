@@ -80,6 +80,7 @@ for (const lang of ["en", "fr"]) {
   ok(await visible(p, '[data-step="1"]') && (await visible(p, '[data-err="address"].on')), `${lang}: empty address blocks Continue and shows the error`);
 
   await p.type('input[name="address"]', "123 Lakeshore Rd, Beaconsfield");
+  await p.type('input[name="postal"]', "H9W 5L6");
   await p.click('label.pill:has(input[name="parking"]) span');
   await tap(p, "[data-next]");
   ok(await visible(p, '[data-step="2"]'), `${lang}: step 3 shown`, await p.evaluate(() => JSON.stringify({ errs: [...document.querySelectorAll(".err.on")].map((e) => e.dataset.err), parking: document.querySelector("form").elements.namedItem("parking").value, addr: document.querySelector('[name="address"]').value, steps: [...document.querySelectorAll("[data-step]")].map((s) => s.hidden) })));
@@ -174,6 +175,7 @@ for (const lang of ["en", "fr"]) {
   const ymd = inTen.toISOString().slice(0, 10);
   await p.click('label.choice:has(input[value="oil-change"])');
   await p.type('input[name="address"]', "45 Main Rd, Hudson");
+  await p.type('input[name="postal"]', "J0P 1H0");
   await p.click('label.pill:has(input[name="parking"]) span');
   await p.$eval('input[name="date"]', (el, v) => (el.value = v), ymd);
   await p.click('label.pill:has(input[value="14"]) span');
@@ -202,7 +204,7 @@ for (const lang of ["en", "fr"]) {
   const soon = await fetch(`${BASE}/api/book`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ lang: "en", service: "brakes", address: "x", parking: "Driveway", name: "A", phone: "5145550100", email: "a@b.co", make: "a", model: "b", startAt: new Date(Date.now() + 3600000).toISOString() }),
+    body: JSON.stringify({ lang: "en", service: "brakes", address: "x", postal: "H9W 5L6", parking: "Driveway", name: "A", phone: "5145550100", email: "a@b.co", make: "a", model: "b", startAt: new Date(Date.now() + 3600000).toISOString() }),
   });
   ok(soon.status === 400 && (await soon.json()).error === "lead_time", "API: a start inside the lead time is refused");
 

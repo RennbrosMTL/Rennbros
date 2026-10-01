@@ -109,6 +109,11 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <span className="cover" data-cover aria-live="polite" />
             </label>
             <p className="err" data-err="address">{b.invalid.address}</p>
+            <label className="field field--short">
+              <span>{b.where.postal}</span>
+              <input className="input" name="postal" type="text" autoComplete="postal-code" autoCapitalize="characters" inputMode="text" maxLength={7} placeholder="H9W 5L6" required />
+            </label>
+            <p className="err" data-err="postal">{b.invalid.postal}</p>
             <div className="field">
               <span id="parking-label">{b.where.parking}</span>
               <div className="pills" role="radiogroup" aria-labelledby="parking-label">

@@ -21,7 +21,7 @@ export const fr: Dict = {
     homeTitle: "Renn Bros — L’entretien de votre voiture à domicile, Ouest-de-l’Île et Vaudreuil⁠-Soulanges",
     homeDescription:
       "Changements d’huile, pneus, freins, batteries et diagnostics, faits comme il faut chez vous dans l’Ouest-de-l’Île et Vaudreuil⁠-Soulanges. Garantie d’un an sur chaque pièce.",
-    services: ["Services et tarifs", "Sept services faits à votre adresse, chaque prix affiché d’avance, déplacement inclus."],
+    services: ["Services et tarifs", "Neuf services faits à votre adresse, chaque prix affiché d’avance, déplacement inclus."],
     how: ["Comment ça marche", "Comment se passe une visite Renn Bros : réservation en deux minutes, confirmation personnelle, travail fait dans votre entrée, clés rendues avec les anciennes pièces montrées."],
     area: ["Territoire", "Renn Bros se déplace dans l’Ouest-de-l’Île et Vaudreuil⁠-Soulanges, de Rigaud à Dorval et de l’Île⁠-⁠Bizard à Valleyfield."],
     faq: ["FAQ", "Le fonctionnement des réservations, ce dont nous avons besoin, la garantie et les travaux que nous ne faisons pas."],
@@ -412,6 +412,7 @@ export const fr: Dict = {
     where: {
       address: "Adresse où la voiture est stationnée",
       addressHelp: "Rue et ville. Nous la comparons à notre territoire au fur et à mesure.",
+      postal: "Code postal",
       parking: "Où est-elle stationnée?",
       parkingOptions: ["Entrée", "Garage", "Rue", "Stationnement du bureau"],
       parkingHelp: "Cela détermine si le travail peut se faire à notre arrivée.",
@@ -468,6 +469,7 @@ export const fr: Dict = {
     invalid: {
       service: "Choisissez au moins un service.",
       address: "Entrez l’adresse où sera la voiture.",
+      postal: "Entrez un code postal comme H9W 5L6.",
       parking: "Indiquez où elle est stationnée.",
       slot: "Choisissez une plage d’arrivée.",
       name: "Entrez votre nom.",
