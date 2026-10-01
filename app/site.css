@@ -103,11 +103,11 @@
 /* --- Phone action bar -------------------------------------------------------------- */
 .bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  display: grid; grid-template-columns: 0.8fr 0.8fr 0.8fr 1.8fr; align-items: center; gap: 0.4rem;
+  display: grid; grid-template-columns: 1fr 1.8fr 1fr; align-items: center; gap: 0.6rem;
   min-height: var(--bar-h); padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
   background: rgb(var(--card-rgb) / 0.92); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
   border-top: 1px solid var(--color-rule);
 }
-.bar__book { min-height: 48px; white-space: nowrap; padding-inline: 0.9rem; }
+.bar__book { min-height: 48px; white-space: nowrap; }
 .bar__side { display: grid; justify-items: center; gap: 2px; text-decoration: none; font-size: 0.75rem; font-weight: 500; color: var(--color-ink-2); padding: 0.25rem 0; }
 @media (min-width: 60em) { .bar { display: none; } }
