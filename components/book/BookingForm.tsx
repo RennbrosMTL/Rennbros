@@ -215,7 +215,14 @@ export function BookingForm({ lang }: { lang: Lang }) {
               ))}
             </dl>
             <p className="note">{b.confirm.requestNote}</p>
-            <p className="note">{business.booking.depositPercent ? b.confirm.depositSet(`${business.booking.depositPercent}%`) : b.confirm.depositUnset}</p>
+            {business.booking.depositPercent ? (
+              <div className="note deposit" data-deposit>
+                <p className="deposit__due num" data-deposit-due>{b.confirm.depositSet(`${business.booking.depositPercent}%`)}</p>
+                <p>{b.confirm.depositRest}</p>
+              </div>
+            ) : (
+              <p className="note">{b.confirm.depositUnset}</p>
+            )}
             <div className="card" data-card hidden>
               <p className="field"><span>{b.confirm.card}</span></p>
               <div id="card-field" className="card__field" />

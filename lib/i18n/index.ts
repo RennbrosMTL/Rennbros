@@ -32,8 +32,10 @@ export const servicesIn = (lang: Lang): Service[] =>
 export const serviceIn = (lang: Lang, slug: string) => servicesIn(lang).find((s) => s.slug === slug);
 
 /** "from $149" / "$149"; in Québec French "à partir de 149 $" / "149 $". */
-export const money = (lang: Lang, dollars: number) =>
-  lang === "fr" ? `${dollars.toLocaleString("fr-CA")} $` : `$${dollars.toLocaleString("en-CA")}`;
+export const money = (lang: Lang, dollars: number, cents = false) => {
+  const o = cents ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : undefined;
+  return lang === "fr" ? `${dollars.toLocaleString("fr-CA", o)} $` : `$${dollars.toLocaleString("en-CA", o)}`;
+};
 
 /** A span, "$150–$220" / "150 $ – 220 $". */
 export const moneyRange = (lang: Lang, a: number, b: number) =>

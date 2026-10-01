@@ -9,6 +9,7 @@ import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
 import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
 import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
+import { depositCents, estimateOf } from "@/lib/booking/deposit";
 
 type Slot = { startAt: string; minutes: number; segments?: unknown[] };
 type Config = {
@@ -457,7 +458,30 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       [value("name"), value("phone"), value("email")].filter(Boolean).join(" · "),
     ];
     rows.forEach((v, i) => ($(`[data-review-v="${i}"]`).textContent = v));
+    // The deposit, by the same rule the server charges with.
+    const due = form.querySelector("[data-deposit-due]");
+    const pct = business.booking.depositPercent;
+    if (due && pct) {
+      const cents = depositCents(picked(), pct, rim(), runFlat());
+      due.textContent = b.confirm.depositDue(money(cfg.lang, cents / 100, true), pct, money(cfg.lang, estimateOf(picked(), rim(), runFlat())));
+    }
   }
+
+  /** One id per booking attempt. Unchanged booking = same id = Square hands
+   *  back the same payment and booking on a resend, never a second charge.
+   *  Any change to what's booked makes a new attempt. The card token is kept
+   *  with its attempt so a resend reuses it instead of authorizing again. */
+  const formId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(16).slice(2)}`;
+  let attempt: { sig: string; id: string; token?: string } | null = null;
+  const attemptFor = () => {
+    const sig = JSON.stringify([picked(), value("startAt"), value("rim"), runFlat(), value("email").toLowerCase()]);
+    if (!attempt || attempt.sig !== sig) {
+      let h = 0;
+      for (const c of sig) h = (h * 31 + c.charCodeAt(0)) | 0;
+      attempt = { sig, id: `${formId.replace(/-/g, "").slice(0, 20)}-${(h >>> 0).toString(36)}` };
+    }
+    return attempt;
+  };
 
   // --- Deposit card (Square Web Payments SDK) ------------------------------
   let card: { tokenize(): Promise<{ status: string; token?: string }> } | null = null;
@@ -495,10 +519,25 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       const body: Record<string, unknown> = {};
       new FormData(form).forEach((v, k) => typeof v === "string" && k !== "service" && k !== "remember" && (body[k] = v));
       body.services = picked();
-      if (card) {
-        const tok = await card.tokenize();
-        if (tok.status !== "OK" || !tok.token) throw new Error("card");
-        body.sourceId = tok.token;
+      const a = attemptFor();
+      body.attempt = a.id;
+      if (pct && cfg.square.appId && depositCents(picked(), pct, rim(), runFlat()) > 0) {
+        if (!card) {
+          alertText.textContent = b.confirm.cardMissing;
+          alert.classList.add("on");
+          alert.focus();
+          return;
+        }
+        if (!a.token) {
+          const tok = await card.tokenize();
+          if (tok.status !== "OK" || !tok.token) {
+            // Square's field shows what's wrong with the card details itself.
+            document.getElementById("card-field")?.scrollIntoView({ block: "center" });
+            return;
+          }
+          a.token = tok.token;
+        }
+        body.sourceId = a.token;
       }
       const r = await fetch("/api/book", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       const data = await r.json().catch(() => ({}));
@@ -521,6 +560,14 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
           sessionStorage.setItem(VISIT_KEY, JSON.stringify(visit));
         } catch {}
         location.assign(`${href(cfg.lang, "/book/received")}?ref=${encodeURIComponent(data.ref)}`);
+        return;
+      }
+      if (data.error === "card_declined" || data.error === "card_required") {
+        // Declined: that token is spent. A new card entry is a new authorization.
+        if (attempt) attempt.token = undefined;
+        alertText.textContent = b.confirm.cardDeclined;
+        alert.classList.add("on");
+        alert.focus();
         return;
       }
       if (data.error === "taken" || data.error === "lead_time") {

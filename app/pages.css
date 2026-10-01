@@ -177,6 +177,9 @@
   .card { display: grid; gap: 0.625rem; }
   .card[hidden] { display: none; }
   .card__field { min-height: 90px; }
+  .deposit { display: grid; gap: 0.3rem; }
+  .deposit p { margin: 0; }
+  .deposit__due { font-weight: 600; color: var(--color-ink); }
 
   .nav { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--color-rule); }
   .nav [hidden] { display: none; }

@@ -63,6 +63,8 @@ export type BookInput = {
   place: SquareAddress | null;
   note: string;
   lang: "en" | "fr";
+  /** Same key on a retry = the same booking back from Square. */
+  idempotencyKey?: string;
 };
 
 export type BookResult = {
@@ -72,21 +74,31 @@ export type BookResult = {
   customerId?: string;
 };
 
-export type DepositInput = {
+/** A card hold for the deposit. Taken BEFORE the booking, captured after it. */
+export type HoldInput = {
   sourceId: string;
   verificationToken?: string;
   amountCents: number;
-  customerId?: string;
-  bookingId: string;
+  /** Same key on a retry = the same payment back from Square, never a second one. */
+  idempotencyKey: string;
+  buyerEmail?: string;
   note: string;
 };
+
+export type Payment = { id: string; status: string; amountCents: number };
 
 export interface BookingProvider {
   readonly name: "square" | "stand-in";
   readonly live: boolean;
   availability(slugs: string[], from: Date, days: number): Promise<Slot[]>;
   book(input: BookInput): Promise<BookResult>;
-  deposit(input: DepositInput): Promise<{ id: string; status: string }>;
+  /** Authorize the deposit on the card (not charged yet). Square cancels the
+   *  hold by itself after 30 minutes unless it is captured. */
+  hold(input: HoldInput): Promise<Payment>;
+  /** Turn a hold into a charge (after the booking exists). */
+  capture(paymentId: string): Promise<Payment>;
+  /** Drop a hold (the booking failed): the customer is never charged. */
+  release(paymentId: string): Promise<void>;
 }
 
 export type SquareEnv = {
@@ -136,6 +148,9 @@ export function parseServiceMap(raw: string | undefined): Record<string, string>
 
 const uuid = () =>
   (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+type SquarePayment = { id: string; status: string; amount_money?: { amount: number } };
+const asPayment = (p: SquarePayment): Payment => ({ id: p.id, status: p.status, amountCents: p.amount_money?.amount ?? 0 });
 
 /* --- Square --------------------------------------------------------------- */
 
@@ -269,10 +284,11 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
           };
         }),
       );
-      const create = (where: object) =>
+      const key = input.idempotencyKey ?? uuid();
+      const create = (where: object, retry = false) =>
         call<{ booking: { id: string; status: string } }>("/v2/bookings", {
           body: {
-            idempotency_key: uuid(),
+            idempotency_key: retry ? `${key}-n` : key,
             booking: {
               start_at: input.slot.startAt,
               location_id: env.locationId,
@@ -293,27 +309,38 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       } catch (e) {
         if (!(input.place && e instanceof SquareError && e.status === 400 && JSON.stringify(e.detail).includes("address"))) throw e;
         console.warn("[book] Square refused the address; booking with the address in the note", JSON.stringify(e.detail));
-        r = await create({});
+        r = await create({}, true);
       }
       const status = r.booking.status === "ACCEPTED" ? "ACCEPTED" : "PENDING";
       return { id: r.booking.id, status, customerId };
     },
 
-    async deposit(input) {
-      const r = await call<{ payment: { id: string; status: string } }>("/v2/payments", {
+    async hold(input) {
+      const r = await call<{ payment: SquarePayment }>("/v2/payments", {
         body: {
           source_id: input.sourceId,
           verification_token: input.verificationToken,
-          idempotency_key: uuid(),
+          idempotency_key: input.idempotencyKey,
           amount_money: { amount: input.amountCents, currency: "CAD" },
-          customer_id: input.customerId,
           location_id: env.locationId,
-          reference_id: input.bookingId,
+          reference_id: input.idempotencyKey.slice(0, 40),
+          buyer_email_address: input.buyerEmail,
           note: input.note.slice(0, 500),
-          autocomplete: true,
+          // Authorize only. If anything goes wrong before we capture, Square
+          // drops the hold by itself; the card is never charged.
+          autocomplete: false,
+          delay_duration: "PT30M",
+          delay_action: "CANCEL",
         },
       });
-      return { id: r.payment.id, status: r.payment.status };
+      return asPayment(r.payment);
+    },
+    async capture(paymentId) {
+      const r = await call<{ payment: SquarePayment }>(`/v2/payments/${encodeURIComponent(paymentId)}/complete`, { body: {} });
+      return asPayment(r.payment);
+    },
+    async release(paymentId) {
+      await call(`/v2/payments/${encodeURIComponent(paymentId)}/cancel`, { body: {} });
     },
   };
 }
@@ -357,9 +384,13 @@ export function standIn(timing: Timing, schedule: Schedule): BookingProvider {
     async book() {
       return { id: `DEMO-${uuid().slice(0, 8).toUpperCase()}`, status: "DEMO" };
     },
-    async deposit() {
-      return { id: "DEMO", status: "DEMO" };
+    async hold(input) {
+      return { id: `DEMO-PAY-${input.idempotencyKey.slice(0, 8)}`, status: "APPROVED", amountCents: input.amountCents };
     },
+    async capture(paymentId) {
+      return { id: paymentId, status: "COMPLETED", amountCents: 0 };
+    },
+    async release() {},
   };
 }
 

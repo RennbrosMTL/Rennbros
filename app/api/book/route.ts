@@ -1,6 +1,8 @@
 import { provider, earliest, timing, schedule, pickServices } from "@/lib/booking/config";
 import { toSquareAddress } from "@/lib/booking/address";
-import { bySlug, isRim, mountPrice } from "@/lib/services";
+import { depositCents, estimateOf } from "@/lib/booking/deposit";
+import { checkout, DepositDeclined } from "@/lib/booking/checkout";
+import { isRim } from "@/lib/services";
 import { business } from "@/lib/business";
 import { href, type Lang } from "@/lib/i18n";
 import { TIME_ZONE, SquareError, fits, type Slot, type Segment } from "@/lib/booking/square";
@@ -14,8 +16,9 @@ export const dynamic = "force-dynamic";
  * with no JavaScript (form data, answers with a 303 to the confirmation page,
  * or back to /book with #send-error, which the page reveals with CSS alone).
  *
- * Order matters: validate, create the booking, and only then take any
- * deposit, so a card is never charged for a booking that failed.
+ * Order matters (lib/booking/checkout.ts): validate, hold the deposit on the
+ * card, create the booking, then capture. A failed booking releases the hold,
+ * so a card is never charged for a booking that doesn't exist.
  */
 export async function POST(request: Request) {
   const isJSON = (request.headers.get("content-type") ?? "").includes("application/json");
@@ -85,37 +88,50 @@ export async function POST(request: Request) {
     s("notes") && `Notes: ${s("notes")}`,
   ].filter(Boolean).join("\n");
 
-  try {
-    const booking = await p.book({
-      slugs,
-      slot,
-      customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone") },
-      address: s("address"),
-      place: toSquareAddress(s("address"), s("postal")),
-      note,
-      lang,
-    });
+  // The deposit: recomputed here from the services, never taken from the browser.
+  const pct = business.booking.depositPercent;
+  // Preview mode (no Square keys) books nothing real, so it takes no deposit.
+  const amountCents = p.live ? depositCents(slugs, pct, rim, runFlat) : 0;
+  if (amountCents > 0 && !s("sourceId")) return fail(request, lang, "card_required", 400, isJSON);
+  // One id per booking attempt; a resend of the same attempt can't charge or book twice.
+  const attempt = /^[\w-]{8,64}$/.test(s("attempt")) ? s("attempt") : crypto.randomUUID();
+  const estimate = estimateOf(slugs, rim, runFlat);
 
-    let deposit: { id: string; status: string } | undefined;
-    const pct = business.booking.depositPercent;
-    if (pct && s("sourceId")) {
-      const total = slugs.reduce((sum, slug) => sum + (slug === "tire-install" ? mountPrice(rim, runFlat) : bySlug(slug)?.priceFrom ?? 0), 0);
-      deposit = await p.deposit({
-        sourceId: s("sourceId"),
-        verificationToken: s("verificationToken") || undefined,
-        amountCents: Math.round(total * pct),
-        customerId: booking.customerId,
-        bookingId: booking.id,
-        note: `Deposit — ${slugs.join(", ")} — booking ${booking.id}`,
-      });
-    }
+  try {
+    const { booking, deposit: dep } = await checkout(
+      p,
+      attempt,
+      {
+        slugs,
+        slot,
+        customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone") },
+        address: s("address"),
+        place: toSquareAddress(s("address"), s("postal")),
+        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · deposit ${pct}%` : note,
+        lang,
+      },
+      amountCents > 0
+        ? {
+            amountCents,
+            sourceId: s("sourceId"),
+            verificationToken: s("verificationToken") || undefined,
+            buyerEmail: s("email"),
+            note: `Deposit ${pct}% · ${slugs.join(", ")} · ${s("name")} · ${slot.startAt.slice(0, 10)}`,
+          }
+        : null,
+    );
+    const deposit = dep && { status: dep.captured ? "COMPLETED" : "NOT_CAPTURED", cents: dep.payment.amountCents || amountCents };
 
     if (!p.live) console.info(`[book] stand-in booking ${booking.id}\n${note}`);
-    if (isJSON) return json({ ok: true, ref: booking.id, status: booking.status, live: p.live, deposit: deposit?.status });
+    if (isJSON) return json({ ok: true, ref: booking.id, status: booking.status, live: p.live, deposit: deposit?.status, depositCents: deposit?.cents });
     return Response.redirect(new URL(`${href(lang, "/book/received")}?ref=${encodeURIComponent(booking.id)}`, request.url), 303);
   } catch (e) {
     const taken = e instanceof SquareError && e.status === 409;
     console.error("[book]", e instanceof SquareError ? JSON.stringify(e.detail) : e);
+    if (e instanceof DepositDeclined) {
+      console.warn("[book] deposit declined", JSON.stringify(e.detail));
+      return fail(request, lang, "card_declined", 402, isJSON);
+    }
     return fail(request, lang, taken ? "taken" : "provider", taken ? 409 : 502, isJSON);
   }
 }

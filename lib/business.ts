@@ -61,9 +61,10 @@ export const business = {
     finishBy: 17,
     leadTimeHours: 24,
     travelMinutes: 30,
-    /** UNSET — deposit percentage not confirmed. While null, no deposit is
-     *  taken online and the page says the amount is set on confirmation. */
-    depositPercent: null as number | null,
+    /** Percent of the pre-tax estimate taken as a deposit when booking online
+     *  (20 = 20%), confirmed 2026-10-01. Refundable in full when cancelled at
+     *  least 24 h before the arrival window. null turns the deposit off. */
+    depositPercent: 20 as number | null,
     /** DRAFT — proposed in the booking terms (lib/i18n pages.terms), for the
      *  owner to confirm. */
     cancellationHours: 24 as number | null,
