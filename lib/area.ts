@@ -1,6 +1,5 @@
 /**
- * The service area as geography: the coverage outline (PENDING the owner's
- * confirmation — see business.area.isPlaceholder) and a point for each town.
+ * The service area as geography: the coverage outline and a point for each town.
  * [longitude, latitude], WGS84.
  */
 export type LngLat = [number, number];

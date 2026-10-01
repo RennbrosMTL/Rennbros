@@ -16,10 +16,9 @@ export const business = {
   domain: "RennBros.com",
 
   area: {
-    /** PENDING CONFIRMATION. The questionnaire says, verbatim: "Dorval to the
-     *  east, Ile bizarre to the north, vallefield south and rigaud West".
-     *  A narrower list has been mentioned since; confirm with the client. */
-    isPlaceholder: true,
+    /** Confirmed 2026-10-01: Rigaud to Dorval, Île Bizard to Valleyfield, plus
+     *  Dollard-des-Ormeaux, Les Cèdres and Pointe-des-Cascades. */
+    isPlaceholder: false,
     corners: { west: "Rigaud", north: "Île Bizard", east: "Dorval", south: "Valleyfield" },
     towns: [
       "Baie-D'Urfé",
