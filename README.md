@@ -180,10 +180,11 @@ lives in Netlify's settings: never in the code, a commit, a chat or an email.
 first, then deployed to Netlify from a clean checkout of that exact commit:
 
 ```bash
-git worktree add --detach ../rb-deploy <commit>
-cd ../rb-deploy && npm ci
-npx netlify deploy --build --prod --site <site-id> --message "<commit>"
+git push origin main
+npm run deploy            # builds origin/main in a clean checkout and publishes it
 ```
+
+(`scripts/deploy.sh`; needs the Netlify CLI logged in to the Renn Bros team.)
 
 Automatic Git builds are paused on Netlify: on the current plan, builds from a
 private repository only run for commits by Netlify team members.

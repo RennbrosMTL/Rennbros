@@ -39,15 +39,13 @@
 }
 .head__link:hover, .head__link[aria-current="page"] { background: var(--color-mist); color: var(--color-ink); }
 .head__end { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
-.head__lang, .theme, .head__menu, .head__wa {
+.head__lang, .theme, .head__menu {
   display: grid; place-items: center; min-width: 44px; height: 44px; border-radius: 999px; flex: none;
   border: 1px solid var(--color-rule-2); background: var(--color-card); color: var(--color-ink); cursor: pointer;
   transition: border-color 180ms var(--ease-soft);
 }
 .head__lang { font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-decoration: none; }
-.head__lang:hover, .theme:hover, .head__menu:hover, .head__wa:hover { border-color: var(--color-ink); }
-.head__wa { display: none; width: 44px; color: var(--color-ink); }
-@media (min-width: 60em) { .head__wa { display: grid; } }
+.head__lang:hover, .theme:hover, .head__menu:hover { border-color: var(--color-ink); }
 .head__tel { display: none; align-items: center; gap: 0.45rem; text-decoration: none; font-size: 0.9375rem; padding: 0 0.5rem; }
 .head__book { display: none; }
 @media (min-width: 40em) { .head__book { display: inline-flex; } }

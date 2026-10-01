@@ -23,7 +23,6 @@ export function LegalPage({ lang, doc }: { lang: Lang; doc: "privacy" | "warrant
             </p>
           </section>
         ))}
-        <p className="draft"><span className="tag">{t.draft}</span> {p.draft}</p>
       </article>
     </>
   );

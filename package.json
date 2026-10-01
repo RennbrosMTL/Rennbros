@@ -15,7 +15,8 @@
     "test:textzoom": "node scripts/textzoom.mjs http://localhost:3000 / /services/ /book/ /area/ /faq/",
     "test:crawl": "node scripts/crawl.mjs",
     "map:snapshot": "node scripts/map-snapshot.mjs http://localhost:3000 /area",
-    "test:deposit": "tsx scripts/deposit-scenarios.mts"
+    "test:deposit": "tsx scripts/deposit-scenarios.mts",
+    "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.2",

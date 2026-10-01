@@ -346,6 +346,7 @@ export const en = {
         ["Payments", "Card details are entered into Square's secure payment field and never reach this website."],
         ["How long we keep it", "As long as we need it for your service history and for the tax and warranty records we're required to keep."],
         ["Remembered on your device", "If you tick “Remember my details” when booking, your name, contact details, address and car are saved in your own browser so the form fills itself in next time. They are not sent to us again or anywhere else, and “Forget my details” on the booking page removes them."],
+        ["Person in charge", "The owner of Renn Bros is responsible for protecting personal information (Québec Act respecting the protection of personal information in the private sector)."],
         ["Your rights", "You can ask what we hold about you, ask for a correction, or ask us to delete it, by writing to"],
       ] as [string, string][],
       draft: "To be reviewed against Québec's Law 25, including naming a person responsible for personal information, before launch.",

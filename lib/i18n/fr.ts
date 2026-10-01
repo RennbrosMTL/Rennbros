@@ -349,6 +349,7 @@ export const fr: Dict = {
         ["Paiements", "Les données de carte sont saisies dans le champ de paiement sécurisé de Square et n’atteignent jamais ce site."],
         ["Durée de conservation", "Aussi longtemps que nécessaire pour l’historique d’entretien et pour les registres fiscaux et de garantie que nous sommes tenus de conserver."],
         ["Mémorisé sur votre appareil", "Si vous cochez « Mémoriser mes coordonnées » en réservant, votre nom, vos coordonnées, votre adresse et votre véhicule sont enregistrés dans votre propre navigateur pour remplir le formulaire la prochaine fois. Ils ne nous sont pas renvoyés ni transmis ailleurs, et « Oublier mes coordonnées » sur la page de réservation les supprime."],
+        ["Personne responsable", "Le propriétaire de Renn Bros est responsable de la protection des renseignements personnels (Loi sur la protection des renseignements personnels dans le secteur privé du Québec)."],
         ["Vos droits", "Vous pouvez demander quels renseignements nous détenons, les faire corriger ou les faire supprimer, en écrivant à"],
       ],
       draft: "À réviser selon la Loi 25 du Québec, y compris la désignation d’une personne responsable des renseignements personnels, avant la mise en ligne.",

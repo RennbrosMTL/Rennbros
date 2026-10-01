@@ -31,9 +31,6 @@ export function SiteHeader({ lang }: { lang: Lang }) {
         <div className="head__end">
           <ThemeToggle dark={t.nav.themeDark} light={t.nav.themeLight} />
           <LangSwitch lang={lang} short={t.other.short} aria={`${t.other.short}, ${t.other.label}`} className="head__lang" />
-          <a className="head__wa" href={whatsappHref(t.nav.whatsappHello)} target="_blank" rel="noopener noreferrer" aria-label={t.nav.whatsappLabel} title={t.nav.whatsappLabel}>
-            <WhatsappLogo size={20} weight="light" aria-hidden />
-          </a>
           <a className="head__tel" href={`tel:${business.phone.tel}`}>
             <Phone size={18} weight="light" aria-hidden />
             <span className="num">{business.phone.display}</span>
