@@ -29,10 +29,12 @@ export const business = {
       "Île Bizard",
       "Kirkland",
       "L'Île-Perrot",
+      "Les Cèdres",
       "Notre-Dame-de-l'Île-Perrot",
       "Pierrefonds",
       "Pincourt",
       "Pointe-Claire",
+      "Pointe-des-Cascades",
       "Rigaud",
       "Saint-Lazare",
       "Sainte-Anne-de-Bellevue",
@@ -43,7 +45,7 @@ export const business = {
     ],
     /** Left off the home page's town buttons to keep that block compact
      *  (still on the map, and listed in full on the service area page). */
-    homeHidden: ["Hudson", "Senneville", "Terrasse-Vaudreuil"],
+    homeHidden: ["Hudson", "Senneville", "Terrasse-Vaudreuil", "Les Cèdres", "Pointe-des-Cascades"],
   },
 
   hours: {

@@ -4,7 +4,7 @@ from shapely.geometry import shape, Polygon, MultiPolygon
 from shapely.ops import unary_union
 t=json.load(open("towns.json")); W=shape(json.load(open("water.json")))
 U=unary_union([shape(v) for v in t.values()])
-U=unary_union([Polygon(p.exterior) for p in U.geoms])          # fill DDO hole
+U=unary_union([Polygon(p.exterior) for p in getattr(U,"geoms",[U])])          # fill DDO hole
 L=U.difference(W)
 r=0.006  # ~500 m: close slivers, round corners, then back off
 S=L.buffer(r,join_style=1).buffer(-r*1.6,join_style=1).buffer(r*0.6,join_style=1)
