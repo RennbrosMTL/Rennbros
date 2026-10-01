@@ -1,0 +1,113 @@
+/* DRIVEWAY — site chrome: header, lockup, theme toggle, phone menu, footer,
+   phone action bar. Page sections style themselves (sections.css). */
+
+/* --- Lockup -------------------------------------------------------------- */
+.mark { display: inline-flex; align-items: center; gap: 0.65rem; line-height: 1; color: var(--color-ink); }
+.mark__rb {
+  flex: none; width: 3.1rem; aspect-ratio: 2635 / 1323; background: currentColor;
+  -webkit-mask: url("/brand/rb-solid.svg") center / contain no-repeat;
+  mask: url("/brand/rb-solid.svg") center / contain no-repeat;
+}
+.mark__text { display: grid; gap: 0.3rem; }
+.mark__name { font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; }
+.mark__renn { color: var(--color-red); }
+/* The brand red is 3.1:1 on dark paper; a lighter red keeps it readable (5.2:1). */
+:root[data-theme="dark"] .mark__renn { color: #ec5359; }
+.mark__imprint { font-size: 0.5625rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-ink-3); white-space: nowrap; }
+@media (max-width: 23.75em) { .mark__rb { width: 2.6rem; } .mark__imprint { display: none; } }
+/* Doubled text on a phone: keep the mark, let the buttons fit. */
+@media (max-width: 22em) { .mark__text { display: none; } }
+
+/* --- Header ---------------------------------------------------------------- */
+.head {
+  position: sticky; top: 0; z-index: 50; height: var(--head-h);
+  background: rgb(var(--paper-rgb) / 0.86);
+  backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid transparent;
+}
+@supports (animation-timeline: scroll()) {
+  .head { animation: head-rule linear both; animation-timeline: scroll(root); animation-range: 0 64px; }
+  @keyframes head-rule { to { border-bottom-color: var(--color-rule); } }
+}
+@supports not (animation-timeline: scroll()) { .head { border-bottom-color: var(--color-rule); } }
+.head__in { height: 100%; display: flex; align-items: center; gap: 2rem; }
+.head__brand { text-decoration: none; flex: none; }
+.head__nav { display: none; gap: 0.35rem; margin-inline: auto; }
+.head__link {
+  padding: 0.5rem 0.9rem; border-radius: 999px; text-decoration: none; font-size: 0.9375rem; color: var(--color-ink-2);
+  transition: background-color 180ms var(--ease-soft), color 180ms var(--ease-soft);
+}
+.head__link:hover, .head__link[aria-current="page"] { background: var(--color-mist); color: var(--color-ink); }
+.head__end { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+.head__lang, .theme, .head__menu {
+  display: grid; place-items: center; min-width: 44px; height: 44px; border-radius: 999px; flex: none;
+  border: 1px solid var(--color-rule-2); background: var(--color-card); color: var(--color-ink); cursor: pointer;
+  transition: border-color 180ms var(--ease-soft);
+}
+.head__lang { font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-decoration: none; }
+.head__lang:hover, .theme:hover, .head__menu:hover { border-color: var(--color-ink); }
+.head__tel { display: none; align-items: center; gap: 0.45rem; text-decoration: none; font-size: 0.9375rem; padding: 0 0.5rem; }
+.head__book { display: none; }
+@media (min-width: 40em) { .head__book { display: inline-flex; } }
+@media (min-width: 64em) { .head__nav { display: flex; } .head__end { margin-left: 0; } .head__end > .head__menu { display: none; } }
+@media (min-width: 77.5em) { .head__tel { display: inline-flex; } }
+
+/* --- Theme toggle ------------------------------------------------------------ */
+.theme { position: relative; overflow: hidden; width: 44px; }
+.theme__icon { position: absolute; inset: 0; display: grid; place-items: center; transition: transform 320ms var(--ease-out), opacity 320ms var(--ease-out); }
+.theme__icon--sun { opacity: 0; transform: translateY(100%) rotate(-45deg); }
+:root[data-theme="dark"] .theme__icon--moon { opacity: 0; transform: translateY(-100%) rotate(45deg); }
+:root[data-theme="dark"] .theme__icon--sun { opacity: 1; transform: none; }
+
+/* --- Phone menu: a native popover ---------------------------------------------- */
+.menu {
+  position: fixed; inset: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0;
+  padding: 0 0 calc(2rem + env(safe-area-inset-bottom)); border: 0; background: var(--color-paper); color: var(--color-ink);
+  display: none; flex-direction: column; opacity: 0; transform: translateY(-8px);
+  transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out), overlay 320ms allow-discrete, display 320ms allow-discrete;
+}
+.menu:popover-open { display: flex; opacity: 1; transform: none; }
+@starting-style { .menu:popover-open { opacity: 0; transform: translateY(-8px); } }
+.menu__top { height: var(--head-h); display: flex; align-items: center; justify-content: space-between; }
+.menu__nav { display: grid; margin-top: 2rem; }
+.menu__nav a {
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 8vw, 2.75rem); letter-spacing: -0.03em;
+  text-decoration: none; padding: 0.55rem 0; border-bottom: 1px solid var(--color-rule);
+}
+.menu__nav a[aria-current="page"] { color: var(--color-red-ink); }
+.menu__foot { margin-top: auto; display: grid; gap: 0.6rem; }
+.menu__lang { justify-self: center; margin-top: 0.6rem; }
+
+/* --- Footer -------------------------------------------------------------------- */
+.foot { background: var(--color-mist); border-top: 1px solid var(--color-rule); margin-top: 6rem; }
+.foot__in { display: grid; gap: 3rem; padding-block: 4.5rem 3rem; }
+@media (min-width: 50em) { .foot__in { grid-template-columns: 1.4fr repeat(3, 1fr); } }
+.foot__brand { display: grid; gap: 1.5rem; justify-items: start; align-content: start; }
+.foot__tag { color: var(--color-ink-2); max-width: 30ch; }
+.foot__col { display: grid; gap: 1rem; align-content: start; }
+.foot__col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }
+.foot__col a { text-decoration-color: transparent; }
+.foot__col a:hover { text-decoration-color: var(--color-red); }
+.foot__hours { color: var(--color-ink-3); font-size: 0.9375rem; }
+.foot__follow { display: grid; gap: 0.9rem; margin-top: 0.75rem; }
+.foot__follow .label { letter-spacing: 0.24em; }
+.foot__social { list-style: none; padding: 0; margin: 0; display: flex; gap: 0.6rem; }
+.foot__social a {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--color-rule-2); color: var(--color-ink-2); background: var(--color-card);
+  transition: border-color 180ms var(--ease-soft), color 180ms var(--ease-soft), transform 320ms var(--ease-out);
+}
+.foot__social a:hover { border-color: var(--color-red); color: var(--color-red-ink); transform: translateY(-2px); }
+.foot__base { padding-block: 1.5rem 2rem; border-top: 1px solid var(--color-rule-2); font-size: 0.9375rem; color: var(--color-ink-3); }
+
+/* --- Phone action bar -------------------------------------------------------------- */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: grid; grid-template-columns: 1fr 1.8fr 1fr; align-items: center; gap: 0.6rem;
+  min-height: var(--bar-h); padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+  background: rgb(var(--card-rgb) / 0.92); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-top: 1px solid var(--color-rule);
+}
+.bar__book { min-height: 48px; }
+.bar__side { display: grid; justify-items: center; gap: 2px; text-decoration: none; font-size: 0.75rem; font-weight: 500; color: var(--color-ink-2); padding: 0.25rem 0; }
+@media (min-width: 60em) { .bar { display: none; } }

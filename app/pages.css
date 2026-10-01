@@ -1,0 +1,338 @@
+/* DRIVEWAY — inner pages. The booking styles are ATELIER's, on these tokens. */
+
+/* --- Book ---------------------------------------------------------------- */
+  .book { padding-top: clamp(2rem, 5vw, 4.5rem); }
+  .book__head { display: grid; gap: 1rem; margin-bottom: 3rem; max-width: 46rem; }
+
+  .alert {
+    display: none; gap: 1rem; align-items: start; margin-bottom: 2rem;
+    padding: 1.5rem; border-radius: var(--radius-card); background: var(--color-red-wash); color: var(--color-red-ink);
+    border: 1px solid rgb(200 22 29 / 0.25);
+  }
+  .alert:target, .alert.on { display: flex; }
+  .alert__t { font-weight: 500; }
+  .alert p + p { color: var(--color-ink-2); }
+
+  .book__grid { display: grid; gap: 3rem; }
+  @media (min-width: 64em) { .book__grid { grid-template-columns: minmax(0, 1fr) 22rem; gap: 4.5rem; align-items: start; } }
+
+  /* --- The form ------------------------------------------------------- */
+  .flow { display: grid; gap: 3rem; min-width: 0; }
+  .step { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 1.5rem; }
+  .step__title { padding: 0; margin-bottom: 1.5rem; outline: none; }
+  .progress { display: none; }
+
+  html.js .flow { gap: 2rem; }
+  html.js .progress {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; list-style: none; padding: 0;
+  }
+  .progress li { display: grid; gap: 0.5rem; font-size: 0.75rem; color: var(--color-ink-3); }
+  .progress li::before { content: ""; height: 3px; border-radius: 3px; background: var(--color-rule); transition: background-color 320ms var(--ease-soft); }
+  .progress li span { display: none; }
+  .progress li em { font-style: normal; font-weight: 500; }
+  .progress li[data-state="done"]::before, .progress li[data-state="now"]::before { background: var(--color-red); }
+  .progress li[data-state="now"] { color: var(--color-ink); }
+  @media (max-width: 35em) { .progress li em { display: none; } .progress li[data-state="now"] em { display: block; white-space: nowrap; } }
+
+  html.js .step[hidden] { display: none; }
+  html.js .step:not([hidden]) { animation: step-in 320ms var(--ease-out) both; }
+  @keyframes step-in { from { opacity: 0; transform: translateX(14px); } }
+  html.js .step[data-dir="back"]:not([hidden]) { animation-name: step-back; }
+  @keyframes step-back { from { opacity: 0; transform: translateX(-14px); } }
+
+  .choices { display: grid; gap: 0.625rem; }
+  @media (min-width: 45em) { .choices { grid-template-columns: 1fr 1fr; } }
+  .choice {
+    position: relative; display: grid; gap: 0.2rem; cursor: pointer;
+    padding: 1rem 3rem 1rem 1.5rem; border-radius: var(--radius-card);
+    background: var(--color-card); border: 1px solid var(--color-rule-2);
+    transition: border-color 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft);
+  }
+  .choice:hover { border-color: var(--color-ink-4); }
+  .choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .choice__name { font-weight: 500; }
+  .choice__sub { display: block; font-style: normal; font-weight: 400; font-size: 0.8125rem; color: var(--color-ink-3); }
+  .choice__meta { font-size: 0.9375rem; color: var(--color-ink-3); }
+  /* Tyres mounted on the customer's rims: the rim size sets the price. */
+  .tireopts { grid-column: 1 / -1; display: grid; gap: 0.875rem; padding: 1.25rem 1.5rem; border-radius: var(--radius-card); background: color-mix(in srgb, var(--color-red) 5%, var(--color-card)); border: 1px solid var(--color-rule-2); }
+  html.js .tireopts:not(.on) { display: none; }
+  .tireopts .help { margin: 0; }
+  .step__help { margin-top: calc(1rem * -1); }
+  .total { font-weight: 500; min-height: 1.5em; }
+  .when__long[hidden] { display: none; }
+  .when__long { color: var(--color-ink-3); }
+  .choice__tick {
+    position: absolute; right: 1rem; top: 50%; translate: 0 -50%;
+    display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px;
+    border: 1px solid var(--color-rule-2); color: transparent;
+    transition: background-color 180ms var(--ease-soft), color 180ms var(--ease-soft);
+  }
+  .choice:has(input:checked) { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
+  .choice:has(input:checked) .choice__tick { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+  .choice:has(input:focus-visible) { outline: 2px solid var(--color-red-ink); outline-offset: 3px; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+  .pill { position: relative; cursor: pointer; }
+  .pill input { position: absolute; opacity: 0; pointer-events: none; }
+  .pill span {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.1rem;
+    border-radius: 999px; border: 1px solid var(--color-rule-2); background: var(--color-card);
+    font-size: 0.9375rem; transition: all 180ms var(--ease-soft);
+  }
+  .pill:hover span { border-color: var(--color-ink-4); }
+  .pill input:checked + span { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+  .pill input:focus-visible + span { outline: 2px solid var(--color-red-ink); outline-offset: 3px; }
+
+  /* The line is always there, so a result appearing never moves the form. */
+  .cover { font-size: 0.9375rem; min-height: 1.55em; display: flex; gap: 0.4rem; align-items: center; }
+  .cover[data-state="in"] { color: var(--color-ok); }
+  .cover[data-state="out"] { color: var(--color-red-ink); }
+  .cover[data-state="checking"] { color: var(--color-ink-3); }
+
+  .grid2, .grid3 { display: grid; gap: 1rem; }
+  @media (min-width: 40em) {
+    .grid2 { grid-template-columns: 1fr 1fr; }
+    .grid3 { grid-template-columns: 6rem 1fr 1fr; }
+    .span2 { grid-column: 1 / -1; }
+  }
+  .opt { font-style: normal; font-weight: 400; color: var(--color-ink-3); }
+
+  .err { display: none; color: var(--color-red-ink); font-size: 0.9375rem; margin-top: calc(0.625rem * -1); }
+  .err.on { display: block; }
+  .grid2 .err, .grid3 .err { margin-top: 0; }
+  .input[aria-invalid="true"] { border-color: var(--color-red); }
+
+  /* When */
+  .when { display: grid; gap: 1.5rem; }
+  .when[hidden], .pick[hidden], .when__preview[hidden] { display: none; }
+  .when__status { color: var(--color-ink-3); }
+  .when__status:empty { display: none; }
+
+  /* A month at a glance: open days are cards, the rest recede. */
+  .pick { display: grid; gap: 2rem; align-items: start; }
+  @media (min-width: 47.5em) { .pick { grid-template-columns: minmax(0, 23rem) minmax(0, 1fr); gap: 3rem; } }
+  .cal { padding: 1.5rem; border-radius: var(--radius-card); background: var(--color-card); border: 1px solid var(--color-rule); }
+  .cal__head { display: grid; grid-template-columns: auto 1fr auto; align-items: center; margin-bottom: 1rem; }
+  .cal__month { text-align: center; font-family: var(--font-display); font-weight: 500; font-size: 1.375rem; letter-spacing: -0.01em; text-transform: capitalize; }
+  .cal__nav {
+    display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--color-rule-2); background: var(--color-card); cursor: pointer;
+    transition: border-color 180ms var(--ease-soft);
+  }
+  .cal__nav:hover:not(:disabled) { border-color: var(--color-ink); }
+  .cal__nav:disabled { opacity: 0.3; cursor: default; }
+  .cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal__grid .cal__dow {
+    text-align: center; padding-bottom: 0.375rem;
+    font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3);
+  }
+  .cal__grid .cal__day {
+    position: relative; aspect-ratio: 1; display: grid; place-items: center;
+    border-radius: var(--radius-sm); border: 1px solid transparent; background: none;
+    font: inherit; font-size: 0.9375rem; font-variant-numeric: tabular-nums; color: var(--color-ink-4);
+  }
+  .cal__grid .cal__day:not(:disabled) {
+    cursor: pointer; color: var(--color-ink); font-weight: 500; background: var(--color-mist); border-color: var(--color-rule);
+    transition: border-color 180ms var(--ease-soft), background-color 180ms var(--ease-soft), color 180ms var(--ease-soft);
+  }
+  .cal__grid .cal__day:not(:disabled):hover { border-color: var(--color-ink); background: var(--color-card); }
+  .cal__grid .cal__day[aria-pressed="true"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+  .cal__grid .cal__day.is-today::after {
+    content: ""; position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--color-red);
+  }
+  .cal__grid .cal__day:focus-visible { outline: 2px solid var(--color-red-ink); outline-offset: 2px; }
+
+  .pick__side { display: grid; gap: 1rem; align-content: start; }
+  .pick__day { font-family: var(--font-display); font-weight: 500; font-size: var(--d4); letter-spacing: -0.01em; text-transform: none; }
+  .pick__day::first-letter { text-transform: uppercase; }
+  .windows { display: grid; gap: 0.625rem; }
+  .windows .win {
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding: 1rem 1.5rem; border-radius: var(--radius-card); cursor: pointer; text-align: left;
+    background: var(--color-card); border: 1px solid var(--color-rule-2); font: inherit; color: inherit;
+  }
+  .windows .win:hover { border-color: var(--color-ink-4); }
+  .windows .win[aria-checked="true"] { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
+  .windows .win span { color: var(--color-ink-3); font-size: 0.9375rem; }
+  .plain { border: 0; padding: 0; margin: 0; display: grid; gap: 1rem; min-width: 0; }
+  .plain[disabled] { display: none; }
+
+  /* Confirm */
+  .review { display: grid; border-top: 1px solid var(--color-rule); }
+  .review[hidden] { display: none; }
+  .review > div { display: grid; grid-template-columns: 6.5rem 1fr auto; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--color-rule); align-items: baseline; }
+  .review dt { font-size: 0.9375rem; color: var(--color-ink-3); }
+  .review dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .edit { background: none; border: 0; padding: 0; cursor: pointer; font-size: 0.9375rem; color: var(--color-ink-2); }
+  /* Booking notes (request, deposit, cancellation): a small red dot leads each one. */
+  .note { position: relative; color: var(--color-ink-2); font-size: 0.9375rem; padding-left: 1.1rem; }
+  .note::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--color-red); }
+  /* Returning customers */
+  .remembered { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; margin: 0; padding: 0.875rem 1.125rem; border-radius: var(--radius-card); background: color-mix(in srgb, var(--color-red) 6%, transparent); color: var(--color-ink-2); font-size: 0.9375rem; }
+  .remembered[hidden], .remember[hidden] { display: none; }
+  .remembered button { background: none; border: 0; padding: 0; min-height: 24px; cursor: pointer; font: inherit; color: var(--color-ink); }
+  .remember { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; }
+  .remember input { flex: none; width: 1.25rem; height: 1.25rem; margin: 0.125rem 0 0; accent-color: var(--color-red); cursor: pointer; }
+  .remember > span { display: grid; gap: 0.25rem; }
+  .card { display: grid; gap: 0.625rem; }
+  .card[hidden] { display: none; }
+  .card__field { min-height: 90px; }
+
+  .nav { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--color-rule); }
+  .nav [hidden] { display: none; }
+  .nav [data-next], .nav [data-submit] { margin-left: auto; }
+  .nav button[aria-busy="true"] { opacity: 0.7; cursor: progress; }
+
+  /* --- Summary -------------------------------------------------------- */
+  .summary { display: grid; gap: 1rem; }
+  @media (min-width: 64em) { .summary { position: sticky; top: calc(var(--head-h) + 1.5rem); } }
+  /* On a phone the confirm step already reviews everything; keep the phone number. */
+  @media (max-width: 63.9375em) { .summary__card { display: none; } }
+  .summary__card {
+    display: grid; gap: 0.625rem; padding: 2rem; border-radius: var(--radius-card);
+    background: var(--color-card); border: 1px solid var(--color-rule); box-shadow: var(--shadow);
+  }
+  .summary__price { font-weight: 500; }
+  .summary__price:empty { display: none; }
+  .summary__facts { list-style: none; padding: 0; display: grid; gap: 0.625rem; margin-top: 0.625rem; padding-top: 1rem; border-top: 1px solid var(--color-rule); font-size: 0.9375rem; color: var(--color-ink-2); }
+  .summary__facts li { display: flex; gap: 0.6rem; align-items: start; }
+  .summary__facts .icon { color: var(--color-red-ink); flex: none; margin-top: 1px; }
+  .summary__talk { display: flex; gap: 0.625rem; flex-wrap: wrap; padding: 0 0.625rem; color: var(--color-ink-3); font-size: 0.9375rem; }
+
+
+/* --- Page head --------------------------------------------------------------- */
+.ph { display: grid; gap: 1rem; padding-top: clamp(3rem, 7vw, 6rem); padding-bottom: 3rem; }
+.ph__title { max-width: 18ch; }
+.ph__lead { max-width: 52ch; }
+
+/* --- Services: the price notes ----------------------------------------------- */
+.notes { display: grid; gap: 1.5rem; margin-top: 5rem; }
+.notes dl { display: grid; gap: 2rem; margin: 0; }
+.notes dl > div { display: grid; gap: 0.6rem; padding-top: 1rem; border-top: 1px solid var(--color-red); }
+.notes dd { margin: 0; color: var(--color-ink-2); }
+@media (min-width: 56.25em) { .notes dl { grid-template-columns: repeat(3, 1fr); } }
+.draft { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; color: var(--color-ink-3); font-size: 0.9375rem; }
+
+/* --- Product page -------------------------------------------------------------- */
+.product { padding-top: clamp(1.5rem, 4vw, 3rem); }
+.crumb { display: flex; align-items: center; gap: 0.5rem; color: var(--color-ink-3); font-size: 0.9375rem; margin-bottom: 1.5rem; }
+.crumb a { display: inline-flex; align-items: center; min-height: 24px; }
+.product__grid { display: grid; gap: 2.5rem; align-items: start; }
+@media (min-width: 64em) { .product__grid { grid-template-columns: 1.1fr 1fr; gap: 4rem; } }
+.product__media { margin: 0; border-radius: var(--radius-lg); overflow: hidden; background: #eceef0; aspect-ratio: 4 / 3; }
+.product__media img { width: 100%; height: 100%; object-fit: cover; }
+@media (min-width: 64em) { .product__media { position: sticky; top: calc(var(--head-h) + 1.5rem); } }
+.product__info { display: grid; gap: 1.5rem; }
+.product__facts { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-block: 1px solid var(--color-rule); }
+.product__facts > div { display: grid; gap: 0.25rem; align-content: start; padding: 1.1rem 1rem 1.1rem 0; }
+.product__facts > div + div { padding-left: 1rem; border-left: 1px solid var(--color-rule); }
+.product__facts dt { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+.product__facts dd { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.75rem); letter-spacing: -0.02em; line-height: 1.15; }
+.product__facts .product__note { font-family: var(--font-sans); font-size: 0.8125rem; font-weight: 400; letter-spacing: 0; color: var(--color-ink-3); line-height: 1.4; }
+@media (max-width: 32.5em) { .product__facts { grid-template-columns: 1fr; } .product__facts > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--color-rule); } }
+.product__ctas { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 0.75rem; }
+.product__call { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: 0.25rem; }
+/* Mount and balance: the price by rim size, straight from the price list. */
+.rims { display: grid; gap: 0.75rem; }
+.rims__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 30em) { .rims__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.rims__grid li { display: grid; gap: 0.15rem; padding: 0.75rem 0.9rem; border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-card); }
+.rims__grid span { font-size: 0.8125rem; color: var(--color-ink-3); }
+.rims__grid strong { font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; letter-spacing: -0.02em; }
+.rims__extra { margin: 0; font-size: 0.9375rem; color: var(--color-ink-2); }
+/* The two tyre services side by side, the way Costco asks: rims or not. */
+.which { display: grid; gap: 0.75rem; }
+.which ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.which li { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: baseline; padding: 0.9rem 1rem; border: 1px solid var(--color-rule); border-radius: var(--radius-card); }
+.which li[aria-current] { border-color: var(--color-red); background: color-mix(in srgb, var(--color-red) 5%, transparent); }
+.which li p { grid-column: 1 / -1; margin: 0; font-size: 0.9375rem; color: var(--color-ink-2); }
+.which li strong, .which li a { font-weight: 500; }
+.which li .num { font-size: 0.9375rem; color: var(--color-ink-2); }
+.product__sub { margin: -0.5rem 0 0; font-size: 0.9375rem; font-weight: 500; color: var(--color-ink-3); }
+.product__incl { display: grid; gap: 0.75rem; }
+.product__incl ul { list-style: none; padding: 0; margin: 0; display: grid; }
+.product__incl li { display: flex; gap: 0.75rem; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--color-rule); }
+.product__incl li svg { color: var(--color-ok); flex: none; }
+.others { display: grid; gap: 1.5rem; }
+.others__row { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 56.25em) { .others__row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mini { display: grid; gap: 0.4rem; text-decoration: none; }
+.mini__img { display: block; border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 4 / 3; background: #eceef0; }
+.mini__img img { width: 100%; height: 100%; object-fit: cover; transition: transform 600ms var(--ease-out); }
+.mini:hover .mini__img img { transform: scale(1.05); }
+.mini__name { font-weight: 500; }
+.mini__price { font-size: 0.875rem; color: var(--color-ink-3); }
+
+/* --- How it works -------------------------------------------------------------- */
+.how__banner { margin: 0 0 4rem; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 21 / 9; background: #d9d4cc; }
+.how__banner img { width: 100%; height: 100%; object-fit: cover; object-position: 70% 60%; }
+@media (max-width: 43.75em) { .how__banner { aspect-ratio: 4 / 3; } }
+.how__flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+@media (min-width: 50em) { .how__flow { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 75em) { .how__flow { grid-template-columns: repeat(5, 1fr); } }
+.how__step { position: relative; display: grid; gap: 0.6rem; align-content: start; padding: 1.5rem; border-radius: var(--radius-card); background: var(--color-card); border: 1px solid var(--color-rule); }
+.how__n { position: absolute; top: 1.25rem; right: 1.25rem; font-family: var(--font-display); font-weight: 500; font-size: 0.875rem; color: var(--color-ink-3); }
+.how__icon { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; background: var(--color-red-wash); color: var(--color-red-ink); margin-bottom: 0.5rem; }
+.how__step p { color: var(--color-ink-2); font-size: 0.9375rem; }
+.ready { display: grid; gap: 1rem; margin-top: 2rem; }
+@media (min-width: 56.25em) { .ready { grid-template-columns: repeat(3, 1fr); } }
+.ready__item { display: grid; gap: 0.6rem; align-content: start; padding: 2rem; border-radius: var(--radius-card); background: var(--color-mist); }
+.ready__item p { color: var(--color-ink-2); }
+.after { display: grid; gap: 1.5rem; padding: clamp(2rem, 5vw, 4rem); border-radius: var(--radius-lg); background: var(--color-card); border: 1px solid var(--color-rule); }
+.after > svg { color: var(--color-red); }
+.after > div:nth-child(2) { display: grid; gap: 0.6rem; }
+.after__ctas { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+@media (min-width: 60em) { .after { grid-template-columns: auto 1fr auto; align-items: center; column-gap: 3rem; } }
+
+/* --- Service area page ----------------------------------------------------------- */
+.area-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+@media (min-width: 60em) { .area-page { grid-template-columns: 7fr 4fr; gap: 4rem; align-items: start; } }
+.area-side { display: grid; gap: 2rem; justify-items: start; min-width: 0; }
+.towns { list-style: none; margin: 0; padding: 0; column-gap: 1.5rem; }
+/* Two columns only while the list has the full width; beside the map it is too narrow for the longest town names. */
+@media (min-width: 27.5em) and (max-width: 59.9375em) { .towns { columns: 2; } }
+.towns li { break-inside: avoid; }
+.town {
+  display: flex; align-items: center; gap: 0.4rem; width: 100%; min-height: 36px; padding: 0.3rem 0.5rem; margin-inline: -0.5rem;
+  border: 0; border-radius: var(--radius-sm); background: none; font: inherit; font-size: 0.9375rem; color: var(--color-ink); text-align: left; cursor: pointer;
+  transition: background-color 180ms var(--ease-soft);
+}
+.town:disabled { cursor: default; color: var(--color-ink); }
+.town:not(:disabled):hover { background: var(--color-mist); }
+.town[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); }
+.town svg { color: var(--color-red); flex: none; }
+.contact { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.contact li { display: flex; align-items: center; gap: 0.6rem; }
+.contact svg { color: var(--color-ink-3); }
+
+/* --- Questions page --------------------------------------------------------------- */
+.faq-page { display: grid; gap: 3rem; }
+@media (min-width: 60em) { .faq-page { grid-template-columns: 8fr 4fr; gap: 4rem; align-items: start; } .ask { position: sticky; top: calc(var(--head-h) + 2rem); } }
+.ask { display: grid; gap: 1rem; padding: 2rem; border-radius: var(--radius-card); background: var(--color-mist); }
+
+/* --- Legal ------------------------------------------------------------------------ */
+.doc { display: grid; gap: 2rem; max-width: calc(46rem + var(--gutter) * 2); margin-left: 0; }
+@media (min-width: 68.75em) { .doc { margin-left: max(0px, calc((100vw - var(--max)) / 2)); } }
+.doc section { display: grid; gap: 0.6rem; padding-top: 1.5rem; border-top: 1px solid var(--color-rule); }
+.doc section p { color: var(--color-ink-2); }
+
+/* --- Received ---------------------------------------------------------------------- */
+.done { padding-block: clamp(3rem, 8vw, 6.5rem); }
+.done__card { max-width: 44rem; margin-inline: auto; display: grid; gap: 1.5rem; justify-items: start; padding: clamp(2rem, 5vw, 4.5rem); border-radius: var(--radius-lg); background: var(--color-card); border: 1px solid var(--color-rule); box-shadow: var(--shadow); }
+.done__seal { color: var(--color-red); }
+.done__ref { display: grid; gap: 0.3rem; padding: 1rem 1.5rem; border-radius: var(--radius-sm); background: var(--color-mist); }
+.done__code { font-size: 1.25rem; font-weight: 500; letter-spacing: 0.04em; }
+.done__demo { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--color-ink-3); font-size: 0.9375rem; }
+.done__more { display: grid; gap: 0.6rem; justify-items: start; padding-top: 1.5rem; border-top: 1px solid var(--color-rule); width: 100%; }
+
+/* --- 404 --------------------------------------------------------------------------- */
+.nf { display: grid; gap: 1.5rem; padding-top: clamp(3rem, 8vw, 6.5rem); }
+.nf h1 { max-width: 14ch; }
+.nf__ctas { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.nf--global { padding-bottom: 6rem; }
+
+/* --- Booking bits that aren't ATELIER's ---------------------------------------------- */
+.book { padding-top: clamp(2rem, 5vw, 4.5rem); }
+.book__head { display: grid; gap: 1rem; margin-bottom: 3rem; max-width: 46rem; }
+.when__preview, .when__long { font-size: 0.9375rem; color: var(--color-ink-3); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.summary__talk p { margin: 0; }
