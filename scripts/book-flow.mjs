@@ -212,10 +212,10 @@ for (const lang of ["en", "fr"]) {
   const combo = await (await fetch(`${BASE}/api/availability?services=brakes,tire-install,oil-change&days=14`)).json();
   const hours = combo.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt))));
   ok(combo.slots.length > 0 && combo.slots.every((x) => x.minutes === 300), "API: three services take 5 h in total", `${combo.slots.length} windows`);
-  ok(hours.every((h) => [8, 11, 14].includes(h)), "API: 5 h visits start at 8, 11 or 2, never 5 pm", [...new Set(hours)].join(","));
+  ok(hours.every((h) => [8, 11].includes(h)), "API: 5 h visits start at 8 or 11 (done by 5 pm)", [...new Set(hours)].join(","));
   const single = await (await fetch(`${BASE}/api/availability?services=oil-change&days=14`)).json();
   const hs = new Set(single.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt)))));
-  ok([...hs].every((h) => [8, 11, 14, 17].includes(h)) && hs.has(17), "API: a short visit can take the 5 pm window", [...hs].sort((a, b) => a - b).join(","));
+  ok([...hs].every((h) => [8, 11, 14].includes(h)) && hs.has(14) && !hs.has(17), "API: a short visit can take the 2 pm window, never 5 pm", [...hs].sort((a, b) => a - b).join(","));
 
   const unknown = await fetch(`${BASE}/api/availability?service=suspension`);
   ok(unknown.status === 400, "API: unknown service refused by availability");

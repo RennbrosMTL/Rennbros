@@ -42,7 +42,7 @@ export type Slot = {
 
 /** When visits may start and by when they must be finished (Montréal time). */
 export type Schedule = {
-  /** Arrival hours, e.g. [8, 11, 14, 17]. */
+  /** Arrival hours, e.g. [8, 11, 14]. */
   arrivals: number[];
   /** Weekdays that take bookings, 0 = Sunday. */
   days: number[];

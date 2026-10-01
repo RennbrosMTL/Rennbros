@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { alternates, dict, isLang, plain, type Lang } from "@/lib/i18n";
 import { Hero } from "@/components/home/Hero";
+import { heroMediaFor } from "@/lib/season";
 import { Menu } from "@/components/menu/Menu";
 import { Marquee, Steps, Area, FaqTeaser, Closing } from "@/components/home/Sections";
 import { ReviewsReel } from "@/components/home/ReviewsReel";
@@ -12,6 +13,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   return { title: { absolute: plain(t.meta.homeTitle) }, description: plain(t.meta.homeDescription), alternates: alternates(lang, "/") };
 }
 
+/** Re-rendered hourly so the seasonal hero changes on its own. */
+export const revalidate = 3600;
+
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const lang = (await params).lang as Lang;
   const t = dict(lang);
@@ -19,7 +23,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const month = new Date().getMonth();
   return (
     <>
-      <Hero lang={lang} initialSeason={month >= 2 && month <= 4 ? "spring" : "winter"} />
+      <Hero lang={lang} initialSeason={month >= 2 && month <= 4 ? "spring" : "winter"} media={heroMediaFor()} />
       <Marquee lang={lang} />
 
       <section id="menu" className="menu-section section page" aria-labelledby="menu-title">

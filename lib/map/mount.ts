@@ -15,7 +15,7 @@ type Config = {
   lang: "en" | "fr";
   key: string;
   center: LngLat;
-  coverage: LngLat[];
+  coverage: LngLat[][];
   towns: { key: string; name: string; at: LngLat }[];
   gestures: [string, string];
   text: Record<"searching" | "in" | "out" | "none" | "error" | "failed", string>;
@@ -140,7 +140,7 @@ async function libre(box: HTMLElement, cfg: Config): Promise<Api> {
   map.fitBounds(bounds(cfg.coverage), { padding: 36, duration: 0 });
   map.addSource("area", {
     type: "geojson",
-    data: { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [cfg.coverage] } },
+    data: { type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: cfg.coverage.map((r) => [r]) } },
   });
   // Under the labels, so town names stay readable through the tint.
   const firstSymbol = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
@@ -205,10 +205,10 @@ async function google(box: HTMLElement, cfg: Config): Promise<Api> {
     styles: LIGHT,
   });
   const b = new g.LatLngBounds();
-  cfg.coverage.forEach(([lng, lat]) => b.extend({ lng, lat }));
+  cfg.coverage.flat().forEach(([lng, lat]) => b.extend({ lng, lat }));
   map.fitBounds(b, 36);
   new g.Polygon({
-    map, paths: cfg.coverage.map(([lng, lat]) => ({ lng, lat })),
+    map, paths: cfg.coverage.map((r) => r.map(([lng, lat]) => ({ lng, lat }))),
     fillColor: AREA, fillOpacity: 0.1, strokeColor: AREA_LINE, strokeOpacity: 0.85, strokeWeight: 1.6, clickable: false,
   });
   for (const t of cfg.towns) {
@@ -335,7 +335,8 @@ async function geocodeGoogle(q: string) {
   return { at: [l.lng(), l.lat()] as LngLat, label: r.formatted_address as string };
 }
 
-function bounds(ring: LngLat[]): [LngLat, LngLat] {
+function bounds(rings: LngLat[][]): [LngLat, LngLat] {
+  const ring = rings.flat();
   const xs = ring.map((p) => p[0]);
   const ys = ring.map((p) => p[1]);
   return [[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]];

@@ -8,6 +8,7 @@ import { business } from "@/lib/business";
 import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
 import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
+import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
 
 type Slot = { startAt: string; minutes: number; segments?: unknown[] };
 type Config = {
@@ -506,6 +507,18 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
         try {
           if (rememberBox?.checked) localStorage.setItem(REMEMBER_KEY, JSON.stringify(Object.fromEntries(REMEMBERED.map((k) => [k, stored(k)]))));
           else localStorage.removeItem(REMEMBER_KEY);
+        } catch {}
+        // For "Add to calendar" on the next page (this tab only).
+        try {
+          const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+          const visit: LastVisit = {
+            ref: String(data.ref),
+            startAt: value("startAt"),
+            minutes: list.reduce((n, s) => n + s.minutes, 0) + travel,
+            title: list.map((s) => s.name).join(" + "),
+            address: [value("address"), value("postal").toUpperCase()].filter(Boolean).join(", "),
+          };
+          sessionStorage.setItem(VISIT_KEY, JSON.stringify(visit));
         } catch {}
         location.assign(`${href(cfg.lang, "/book/received")}?ref=${encodeURIComponent(data.ref)}`);
         return;

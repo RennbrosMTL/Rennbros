@@ -4,7 +4,7 @@ import { ArrowRight, CalendarCheck, ChatCircleText, HandTap, Key, ShieldCheck, T
 import { business } from "@/lib/business";
 import { alternates, dict, href, isLang, plain, type Lang } from "@/lib/i18n";
 import { PageHead } from "@/components/site/PageHead";
-import { heroMedia } from "@/lib/season";
+import { heroMediaFor } from "@/lib/season";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -13,6 +13,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   return { title: t.meta.how[0], description: plain(t.meta.how[1]), alternates: alternates(lang, "/how-it-works") };
 }
 
+/** Re-rendered hourly so the seasonal picture changes on its own. */
+export const revalidate = 3600;
+
 const ICONS = [HandTap, ChatCircleText, Toolbox, CalendarCheck, Key];
 
 /** From booking to keys back: the five moments, then what we need from you. */
@@ -20,6 +23,7 @@ export default async function How({ params }: { params: Promise<{ lang: string }
   const lang = (await params).lang as Lang;
   const t = dict(lang);
   const h = t.pages.how;
+  const heroMedia = heroMediaFor();
   return (
     <>
       <PageHead label={h.label} title={h.title} lead={h.lead} />

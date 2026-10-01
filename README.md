@@ -114,7 +114,7 @@ from either language.
 | Service area towns / outline | `lib/business.ts` (town list) and `lib/area.ts` (polygon, points). Then run `npm run map:snapshot` |
 | Reviews | `lib/reviews.ts` (set `reviewsArePlaceholder = false` once they are real) |
 | Photos | replace files in `public/media/` with the same names and sizes |
-| Seasonal hero | build with `NEXT_PUBLIC_HERO_SEASON=fall` or `winter` (see `lib/season.ts`) |
+| Seasonal hero | switches by date on its own: winter Nov–Feb, spring Mar–May, summer Jun–Aug, fall Sep–Oct (dates in `lib/season.ts`) |
 
 **Prices** follow the business's own price list and are shown the way it
 writes them (`$125/h + parts`, `$150–$220 + refrigerant`, prices by rim size).
@@ -153,7 +153,7 @@ comes from, is in `.env.example`):
 | `NEXT_PUBLIC_SQUARE_APP_ID` | no | Application ID (card field) |
 | `NEXT_PUBLIC_SQUARE_LOCATION_ID` | no | same Location ID |
 | `NEXT_PUBLIC_SQUARE_ENVIRONMENT` | no | `production` |
-| `NEXT_PUBLIC_HERO_SEASON` | no | `fall` or `winter` |
+| `HERO_SEASON_OVERRIDE` | no | pin one hero: `winter`, `spring`, `summer` or `fall` (leave unset for the automatic switch) |
 
 `NEXT_PUBLIC_*` settings are read when the site is built: **redeploy** after
 changing them. The deposit percentage is `booking.depositPercent` in

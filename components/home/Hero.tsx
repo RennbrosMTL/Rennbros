@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ArrowRight, Check, Plus, SealCheck, ShieldCheck, Clock } from "@phosphor-icons/react";
 import { dict, href, price, duration, serviceIn, type Lang } from "@/lib/i18n";
 import { useVisit } from "@/lib/visit";
-import { heroMedia } from "@/lib/season";
+import type { HeroMedia } from "@/lib/season";
 
 /** Québec: winter tires from December 1 to March 15. March to May talks about
  *  taking them off; the rest of the year about putting them on. */
@@ -21,7 +21,7 @@ const seasonOf = (m: number) => (m >= 2 && m <= 4 ? "spring" : "winter");
  * loading, and fades in over the poster when it actually plays. It is never
  * fetched with reduced motion, Data Saver, or a 2G-class connection.
  */
-export function Hero({ lang, initialSeason }: { lang: Lang; initialSeason: "winter" | "spring" }) {
+export function Hero({ lang, initialSeason, media: heroMedia }: { lang: Lang; initialSeason: "winter" | "spring"; media: HeroMedia }) {
   const t = dict(lang);
   const h = t.home.hero;
   const [season, setSeason] = useState(initialSeason);
@@ -58,7 +58,7 @@ export function Hero({ lang, initialSeason }: { lang: Lang; initialSeason: "wint
       still.removeEventListener("change", onMotion);
       window.removeEventListener("load", later);
     };
-  }, []);
+  }, [heroMedia.loop]);
 
   return (
     <section className="hero page" aria-labelledby="hero-title">

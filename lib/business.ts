@@ -47,18 +47,18 @@ export const business = {
   },
 
   hours: {
-    /** 0 = Sunday. Saturday by arrangement.
-     *  PENDING CONFIRMATION: the questionnaire says weekdays 8 to 4; arrivals
-     *  at 8, 11, 2 and 5 were set on 2026-09-26, which runs into the evening. */
-    open: { days: [1, 2, 3, 4, 5], from: 8, to: 20 },
+    /** 0 = Sunday. Saturday by arrangement. Confirmed 2026-10-01: 8 am to
+     *  5 pm; 6 to 10 pm emergencies only (battery, jump start), by call or
+     *  text, never booked online. */
+    open: { days: [1, 2, 3, 4, 5], from: 8, to: 17 },
     byArrangement: [6],
   },
 
   booking: {
     /** Arrival windows, three hours apart, Montréal time. */
-    arrivals: [8, 11, 14, 17],
+    arrivals: [8, 11, 14],
     /** A visit, however many services, must be finished by this hour. */
-    finishBy: 20,
+    finishBy: 17,
     leadTimeHours: 24,
     travelMinutes: 30,
     /** UNSET — deposit percentage not confirmed. While null, no deposit is
@@ -81,3 +81,9 @@ export const business = {
     ],
   },
 } as const;
+
+/** A WhatsApp chat with the business number, optionally with a first line typed in. */
+export function whatsappHref(hello?: string): string {
+  const n = business.phone.tel.replace(/\D/g, "");
+  return `https://wa.me/${n}${hello ? `?text=${encodeURIComponent(hello)}` : ""}`;
+}
