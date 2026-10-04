@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretLeft, CaretRight, Check, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
@@ -245,23 +245,37 @@ export function BookingForm({ lang }: { lang: Lang }) {
             <p className="err" data-err="notify">{b.invalid.notify}</p>
             <p className="note">{b.confirm.requestNote}</p>
             {business.booking.depositPercent ? (
-              <div className="note deposit" data-deposit>
-                <p className="deposit__due num" data-deposit-due>{b.confirm.depositSet(`${business.booking.depositPercent}%`)}</p>
-                <p>{b.confirm.depositRest} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.policy}</a></p>
-              </div>
+              <section className="pay" aria-labelledby="pay-title" data-deposit>
+                <header className="pay__head">
+                  <div>
+                    <h3 className="pay__title" id="pay-title">{b.confirm.payTitle}</h3>
+                    <p className="pay__hint">{b.confirm.payHint(business.booking.depositPercent)}</p>
+                  </div>
+                  <p className="pay__amount num" data-pay-amount aria-live="polite" />
+                </header>
+                <dl className="pay__lines">
+                  <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
+                  <div><dt>{b.confirm.payDeposit(business.booking.depositPercent)}</dt><dd className="num" data-pay-deposit /></div>
+                  <div className="pay__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>
+                </dl>
+                <div className="card pay__methods" data-card hidden>
+                  <div className="wallets" data-wallets hidden>
+                    <button type="button" id="apple-pay" className="wallet wallet--apple" aria-label="Apple Pay" hidden />
+                    <div id="google-pay" className="wallet" hidden />
+                    <p className="wallets__or"><span>{b.confirm.cardOr}</span></p>
+                  </div>
+                  <div id="card-field" className="card__field" />
+                  <p className="pay__accepted">{b.confirm.cardAccepted}</p>
+                </div>
+                <p className="pay__foot">
+                  <LockSimple size={15} weight="bold" aria-hidden />
+                  <span>{b.confirm.paySecure}</span>
+                  <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.policy}</a>
+                </p>
+              </section>
             ) : (
               <p className="note">{b.confirm.depositUnset}</p>
             )}
-            <div className="card" data-card hidden>
-              <p className="field"><span>{b.confirm.card}</span></p>
-              <div className="wallets" data-wallets hidden>
-                <button type="button" id="apple-pay" className="wallet wallet--apple" aria-label="Apple Pay" hidden />
-                <div id="google-pay" className="wallet" hidden />
-                <p className="wallets__or"><span>{b.confirm.cardOr}</span></p>
-              </div>
-              <div id="card-field" className="card__field" />
-              <p className="help">{b.confirm.cardAccepted}</p>
-            </div>
             {!business.booking.depositPercent && (
               <p className="note">{cancel ? b.confirm.cancelSet(cancel) : b.confirm.cancelUnset} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.terms}</a></p>
             )}

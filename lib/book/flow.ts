@@ -459,12 +459,16 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     ];
     rows.forEach((v, i) => ($(`[data-review-v="${i}"]`).textContent = v));
     // The deposit, by the same rule the server charges with.
-    const due = form.querySelector("[data-deposit-due]");
     const pct = business.booking.depositPercent;
     try { paymentRequest?.update({ total: total() }); } catch {}
-    if (due && pct) {
+    if (pct && form.querySelector("[data-pay-amount]")) {
       const cents = depositCents(picked(), pct, rim(), runFlat());
-      due.textContent = b.confirm.depositDue(money(cfg.lang, cents / 100, true), pct, money(cfg.lang, estimateOf(picked(), rim(), runFlat())));
+      const due = money(cfg.lang, cents / 100, true);
+      $("[data-pay-amount]").textContent = due;
+      $("[data-pay-deposit]").textContent = due;
+      $("[data-pay-estimate]").textContent = money(cfg.lang, estimateOf(picked(), rim(), runFlat()), true);
+      // The button says what happens: pay, then send.
+      if (cfg.square.appId && cents > 0) submit.textContent = b.confirm.payAndSend(due);
     }
   }
 
