@@ -192,7 +192,9 @@
   .wallets[hidden], .wallet[hidden] { display: none; }
   .wallet { min-height: 48px; width: 100%; }
   #google-pay { height: 48px; }
-  .wallet--apple { -webkit-appearance: -apple-pay-button; appearance: auto; -apple-pay-button-type: pay; -apple-pay-button-style: black; border: 0; cursor: pointer; }
+  /* Apple's own button look. No unprefixed "appearance" after it: newer Safari
+     would read that and draw a blank button. */
+  .wallet--apple { display: block; height: 48px; padding: 0; border: 0; border-radius: 4px; cursor: pointer; -webkit-appearance: -apple-pay-button; -apple-pay-button-type: pay; -apple-pay-button-style: black; }
   .wallets__or { display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--color-ink-3); }
   .wallets__or::before, .wallets__or::after { content: ""; flex: 1; height: 1px; background: var(--color-rule); }
   /* VIN from a photo, and booking photos */
