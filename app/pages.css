@@ -188,13 +188,16 @@
   .card { display: grid; gap: 0.625rem; }
   .card[hidden] { display: none; }
   .card__field { min-height: 90px; }
-  .wallets { display: grid; gap: 0.6rem; }
+  .wallets { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+  /* Both wallets: side by side, logo buttons; one wallet takes the full width. */
+  .wallets:has(#apple-pay:not([hidden])):has(#google-pay:not([hidden])) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wallets__or { grid-column: 1 / -1; }
   .wallets[hidden], .wallet[hidden] { display: none; }
-  .wallet { min-height: 48px; width: 100%; }
-  #google-pay { height: 48px; }
+  .wallet { min-height: 44px; width: 100%; min-width: 0; }
+  #google-pay { height: 44px; }
   /* Apple's own button look. No unprefixed "appearance" after it: newer Safari
      would read that and draw a blank button. */
-  .wallet--apple { display: block; height: 48px; padding: 0; border: 0; border-radius: 4px; cursor: pointer; -webkit-appearance: -apple-pay-button; -apple-pay-button-type: pay; -apple-pay-button-style: black; }
+  .wallet--apple { display: block; height: 44px; padding: 0; border: 0; border-radius: 4px; cursor: pointer; -webkit-appearance: -apple-pay-button; -apple-pay-button-type: plain; -apple-pay-button-style: black; }
   .wallets__or { display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--color-ink-3); }
   .wallets__or::before, .wallets__or::after { content: ""; flex: 1; height: 1px; background: var(--color-rule); }
   /* VIN from a photo, and booking photos */

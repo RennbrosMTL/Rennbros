@@ -54,7 +54,11 @@ export const viewport: Viewport = {
 
 /* Runs before first paint: marks JS as present and applies a stored dark
    theme, so a dark visit never flashes light. */
-const boot = `document.documentElement.classList.add("js");try{if(localStorage.getItem("rennbros.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}`;
+// Safety net: a page caught mid-deploy can point at the previous build's
+// stylesheet and load unstyled. If the site's design tokens are missing once
+// the page has loaded, reload once (never more than once a minute).
+const boot = `document.documentElement.classList.add("js");try{if(localStorage.getItem("rennbros.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}
+addEventListener("load",function(){try{if(getComputedStyle(document.documentElement).getPropertyValue("--color-paper").trim())return;var k="rennbros.cssReload",t=+sessionStorage.getItem(k)||0;if(Date.now()-t<6e4)return;sessionStorage.setItem(k,String(Date.now()));location.reload()}catch(e){}});`;
 
 export default async function Layout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;

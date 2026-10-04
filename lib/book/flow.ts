@@ -558,7 +558,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
         const g = await payments.googlePay(paymentRequest);
         const el = document.getElementById("google-pay")!;
         el.hidden = false;
-        await g.attach("#google-pay", { buttonColor: "black", buttonSizeMode: "fill", buttonType: "pay" });
+        await g.attach("#google-pay", { buttonColor: "black", buttonSizeMode: "fill", buttonType: "plain" });
         el.addEventListener("click", () => payWith(g));
         wallets.hidden = false;
       } catch {
