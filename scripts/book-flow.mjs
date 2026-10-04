@@ -93,8 +93,12 @@ for (const lang of ["en", "fr"]) {
   const canNext = await p.$eval("[data-cal-next]", (b) => !b.disabled);
   if (canNext) {
     const before = await p.$eval("[data-cal-month]", (e) => e.textContent);
+    await p.$eval("[data-cal-next]", (b) => b.scrollIntoView({ block: "center" }));
     await p.click("[data-cal-next]");
     ok((await p.$eval("[data-cal-month]", (e) => e.textContent)) !== before, `${lang}: next month`);
+    // The month grid re-renders; let it settle, then go back.
+    await p.waitForFunction(() => !document.querySelector("[data-cal-prev]")?.disabled);
+    await p.$eval("[data-cal-prev]", (b) => b.scrollIntoView({ block: "center" }));
     await p.click("[data-cal-prev]");
   }
   const first = await p.$eval(".cal__day[aria-pressed=true]", (b) => b.dataset.day);
@@ -208,11 +212,11 @@ for (const lang of ["en", "fr"]) {
   });
   ok(soon.status === 400 && (await soon.json()).error === "lead_time", "API: a start inside the lead time is refused");
 
-  // Combined visits: hourly starts 8 to 5, the work done by 8 pm.
+  // Combined visits: hourly starts 8 am to 5 pm, whatever the length.
   const combo = await (await fetch(`${BASE}/api/availability?services=brakes,tire-install,oil-change&days=14`)).json();
   const hours = combo.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt))));
   ok(combo.slots.length > 0 && combo.slots.every((x) => x.minutes === 270), "API: three services take 4 h 30 in total", `${combo.slots.length} windows`);
-  ok(hours.every((h) => h >= 8 && h <= 15) && hours.includes(15), "API: 4 h 30 visits start 8 to 3 pm (done by 8 pm)", [...new Set(hours)].join(","));
+  ok(hours.every((h) => h >= 8 && h <= 17) && hours.includes(17), "API: 4 h 30 visits start any hour 8 am to 5 pm", [...new Set(hours)].join(","));
   const single = await (await fetch(`${BASE}/api/availability?services=oil-change&days=14`)).json();
   const hs = new Set(single.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt)))));
   ok([...hs].every((h) => h >= 8 && h <= 17) && hs.has(17) && !hs.has(18), "API: a 1 h visit can start any hour 8 am to 5 pm, never 6 pm", [...hs].sort((a, b) => a - b).join(","));

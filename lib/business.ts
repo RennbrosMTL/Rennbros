@@ -58,9 +58,10 @@ export const business = {
   booking: {
     /** Start times, every hour from 8 am to 5 pm, Montréal time. */
     arrivals: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-    /** The latest a visit may run to (a 5 pm start can go into the evening).
-     *  Square's hours for the business and the team member must reach it. */
-    finishBy: 20,
+    /** Every service, alone or combined, can start as late as 5 pm; the work
+     *  may run into the evening, up to this hour. Square's hours (business and
+     *  team member) decide what's actually free. */
+    finishBy: 22,
     /** Travel and prep kept free after every visit (not shown to customers). */
     bufferMinutes: 30,
     leadTimeHours: 24,
