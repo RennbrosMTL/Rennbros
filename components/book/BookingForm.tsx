@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, CalendarBlank, Camera, Image as ImageIcon, CaretLeft, CaretRight, Check, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretLeft, CaretRight, Check, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
@@ -234,6 +234,15 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 </div>
               ))}
             </dl>
+            <fieldset className="notify" aria-describedby="notify-help">
+              <legend className="notify__legend">{b.confirm.notify}</legend>
+              <div className="notify__opts">
+                <label className="notify__opt"><input type="checkbox" name="notifyEmail" defaultChecked /><span><EnvelopeSimple size={18} weight="light" aria-hidden />{b.confirm.notifyEmail}</span></label>
+                <label className="notify__opt"><input type="checkbox" name="notifyText" defaultChecked /><span><ChatText size={18} weight="light" aria-hidden />{b.confirm.notifyText}</span></label>
+              </div>
+              <span className="help" id="notify-help">{b.confirm.notifyHelp}</span>
+            </fieldset>
+            <p className="err" data-err="notify">{b.invalid.notify}</p>
             <p className="note">{b.confirm.requestNote}</p>
             {business.booking.depositPercent ? (
               <div className="note deposit" data-deposit>

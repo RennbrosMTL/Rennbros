@@ -65,7 +65,14 @@ export type Timing = { total(slugs: string[]): number; each(slug: string): numbe
 export type BookInput = {
   slugs: string[];
   slot: Slot;
-  customer: { givenName: string; familyName?: string; email: string; phone: string };
+  customer: {
+    givenName: string;
+    familyName?: string;
+    email: string;
+    phone: string;
+    /** Which contact details Square may use to send updates (default both). */
+    notify?: { email: boolean; text: boolean };
+  };
   /** As typed, for the note. */
   address: string;
   /** Structured, for Square (null when we couldn't be sure of city or postal code). */
@@ -217,13 +224,17 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       body: { query: { filter: { email_address: { exact: c.email } } }, limit: 1 },
     });
     if (found.customers?.[0]) return found.customers[0].id;
+    // Square sends booking updates to the email and phone on the profile:
+    // keep off the one the customer didn't choose (both stay in the note).
+    const notify = c.notify ?? { email: true, text: true };
     const made = await call<{ customer: { id: string } }>("/v2/customers", {
       body: {
         idempotency_key: uuid(),
         given_name: c.givenName,
         family_name: c.familyName,
-        email_address: c.email,
-        phone_number: c.phone,
+        ...(notify.email ? { email_address: c.email } : {}),
+        ...(notify.text ? { phone_number: c.phone } : {}),
+        note: `Phone: ${c.phone} · Email: ${c.email} · Updates by ${notify.email && notify.text ? "email and text" : notify.email ? "email only" : "text only"}`,
       },
     });
     return made.customer.id;

@@ -81,11 +81,19 @@ export async function POST(request: Request) {
   // Photos uploaded with the form: only well-formed ids, at most four.
   const site = new URL(request.url).origin;
   const photoLinks = s("photos").split(",").filter((id) => PHOTO_ID.test(id)).slice(0, MAX_PHOTOS).map((id) => `${site}/api/photo/${id}`);
+  // How the customer wants updates: Square notifies by whatever contact
+  // details sit on the customer profile, so only those go on it.
+  const flag = (k: string) => data[k] === true || data[k] === "on" || data[k] === "true";
+  let notify = { email: flag("notifyEmail"), text: flag("notifyText") };
+  if (!("notifyEmail" in data) && !("notifyText" in data)) notify = { email: true, text: true };
+  if (!notify.email && !notify.text) return fail(request, lang, "notify", 400, isJSON);
   const note = [
     `Services: ${slugs.join(", ")} (about ${minutes} min with travel)`,
     slugs.includes("tire-install") && `Tires to mount and balance: rim ${rim ? `${rim}"` : "size not given"}${runFlat ? ", run-flat (+$20)" : ""}`,
     `Address: ${[s("address"), s("postal").toUpperCase()].filter(Boolean).join(", ")}`,
     `Parking: ${s("parking")}`,
+    `Contact: ${s("phone")} · ${s("email")}`,
+    `Updates by: ${notify.email && notify.text ? "email and text" : notify.email ? "email only (no texts)" : "text only (no emails)"}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
     s("vin") && `VIN: ${s("vin")}`,
     lang === "fr" && "Language: French — reply in French",
@@ -109,7 +117,7 @@ export async function POST(request: Request) {
       {
         slugs,
         slot,
-        customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone") },
+        customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone"), notify },
         address: s("address"),
         place: toSquareAddress(s("address"), s("postal")),
         note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · deposit ${pct}%` : note,

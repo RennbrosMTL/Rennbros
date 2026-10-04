@@ -661,10 +661,24 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     }
   });
 
+  // Updates by email / text: the error clears as soon as one is ticked.
+  form.addEventListener("change", (e) => {
+    const n = (e.target as HTMLInputElement).name;
+    if (n === "notifyEmail" || n === "notifyText") $('[data-err="notify"]').classList.remove("on");
+  });
+
   // --- Send ---------------------------------------------------------------
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     for (let n = 0; n < LAST; n++) if (!check(n)) return go(n);
+    // Updates: at least one of email or text.
+    const notifyErr = $('[data-err="notify"]');
+    const anyNotify = ["notifyEmail", "notifyText"].some((k) => form.querySelector<HTMLInputElement>(`[name="${k}"]`)?.checked);
+    notifyErr.classList.toggle("on", !anyNotify);
+    if (!anyNotify) {
+      form.querySelector<HTMLElement>(".notify")?.scrollIntoView({ block: "center" });
+      return;
+    }
     alert.classList.remove("on");
     $('[data-err="taken"]').classList.remove("on");
     submit.setAttribute("aria-busy", "true");
@@ -677,6 +691,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       const body: Record<string, unknown> = {};
       new FormData(form).forEach((v, k) => typeof v === "string" && k !== "service" && k !== "remember" && (body[k] = v));
       body.services = picked();
+      body.notifyEmail = !!form.querySelector<HTMLInputElement>('[name="notifyEmail"]')?.checked;
+      body.notifyText = !!form.querySelector<HTMLInputElement>('[name="notifyText"]')?.checked;
       const a = attemptFor();
       body.attempt = a.id;
       if (pct && cfg.square.appId && depositNow() > 0) {
