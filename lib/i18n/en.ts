@@ -331,7 +331,7 @@ export const en = {
         ["What does the warranty cover?", "One year on the parts we supply and fit. If one of them fails within a year, we come back and deal with it, labour included. Parts you buy yourself aren't covered by our warranty."],
         ["Is there a call-out fee?", "Not on a booked visit. Travel is included anywhere in our area. A diagnostic is charged up front and credited against the repair if you go ahead."],
         ["What don't you do?", "Suspension, drivetrain, welding and exhaust: work that needs a lift and a shop floor. We'll point you to someone who does it properly."],
-        ["Evenings or weekends?", "Monday to Friday, 8 am to 5 pm, with a start time every hour from 8 am to 4 pm. Saturday by arrangement. From 6 to 10 pm we take emergencies only, like a dead battery or a jump start, by call or text."],
+        ["Evenings or weekends?", "Monday to Friday, 8 am to 5 pm, with a start time every hour from 8 am to 5 pm. Saturday by arrangement. From 6 to 10 pm we take emergencies only, like a dead battery or a jump start, by call or text."],
         ["How do I pay?", "By card. A 20% deposit is paid online when you book; the balance, plus tax, is paid after the work."],
       ] as [string, string][],
     },

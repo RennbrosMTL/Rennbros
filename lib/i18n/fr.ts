@@ -334,7 +334,7 @@ export const fr: Dict = {
         ["Que couvre la garantie?", "Un an sur les pièces que nous fournissons et posons. Si l’une d’elles fait défaut dans l’année, nous revenons nous en occuper, main-d’œuvre comprise. Les pièces que vous achetez vous-même ne sont pas couvertes par notre garantie."],
         ["Y a-t-il des frais de déplacement?", "Pas sur un rendez-vous. Le déplacement est inclus partout sur notre territoire. Un diagnostic est facturé d’avance et déduit de la réparation si vous la faites faire."],
         ["Que ne faites-vous pas?", "Suspension, transmission, soudure et échappement : des travaux qui demandent un pont élévateur et un atelier. Nous vous dirigerons vers quelqu’un qui les fait comme il faut."],
-        ["Le soir ou la fin de semaine?", "Du lundi au vendredi, de 8 h à 17 h, avec une arrivée possible chaque heure, de 8 h à 16 h. Le samedi, sur entente. De 18 h à 22 h, nous prenons seulement les urgences, comme une batterie à plat ou un survoltage, par appel ou texto."],
+        ["Le soir ou la fin de semaine?", "Du lundi au vendredi, de 8 h à 17 h, avec une arrivée possible chaque heure, de 8 h à 17 h. Le samedi, sur entente. De 18 h à 22 h, nous prenons seulement les urgences, comme une batterie à plat ou un survoltage, par appel ou texto."],
         ["Comment puis-je payer?", "Par carte. Un dépôt de 20 % se paie en ligne à la réservation; le solde, taxes en sus, se paie après les travaux."],
       ],
     },

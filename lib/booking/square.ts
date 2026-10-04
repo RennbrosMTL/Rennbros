@@ -274,8 +274,11 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
         for (const h of schedule.arrivals) {
           if (h * 60 + minutes > schedule.finishBy * 60) continue;
           const startAt = zoned(ymd, h);
-          const need = minutes + bufferAfter(schedule, startAt, minutes);
           const t0 = Date.parse(startAt);
+          // The buffer protects the next customer: needed only if Square has
+          // open time later that day (not when it closes or is blocked after).
+          const later = [...open].some((t) => t >= t0 + minutes * 60000 && t < t0 + 16 * 3600000);
+          const need = minutes + (later ? bufferAfter(schedule, startAt, minutes) : 0);
           let free = true;
           for (let m = 0; m < need && free; m += step) free = open.has(t0 + m * 60000);
           if (free) out.push({ startAt, minutes });

@@ -208,14 +208,14 @@ for (const lang of ["en", "fr"]) {
   });
   ok(soon.status === 400 && (await soon.json()).error === "lead_time", "API: a start inside the lead time is refused");
 
-  // Combined visits: hourly starts, the work done by 5 pm.
+  // Combined visits: hourly starts 8 to 5, the work done by 8 pm.
   const combo = await (await fetch(`${BASE}/api/availability?services=brakes,tire-install,oil-change&days=14`)).json();
   const hours = combo.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt))));
   ok(combo.slots.length > 0 && combo.slots.every((x) => x.minutes === 270), "API: three services take 4 h 30 in total", `${combo.slots.length} windows`);
-  ok(hours.every((h) => h >= 8 && h <= 12), "API: 4 h 30 visits start 8 to 12 (done by 5 pm)", [...new Set(hours)].join(","));
+  ok(hours.every((h) => h >= 8 && h <= 15) && hours.includes(15), "API: 4 h 30 visits start 8 to 3 pm (done by 8 pm)", [...new Set(hours)].join(","));
   const single = await (await fetch(`${BASE}/api/availability?services=oil-change&days=14`)).json();
   const hs = new Set(single.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt)))));
-  ok([...hs].every((h) => h >= 8 && h <= 16) && hs.has(16) && !hs.has(17), "API: a 1 h visit can start any hour up to 4 pm, never 5 pm", [...hs].sort((a, b) => a - b).join(","));
+  ok([...hs].every((h) => h >= 8 && h <= 17) && hs.has(17) && !hs.has(18), "API: a 1 h visit can start any hour 8 am to 5 pm, never 6 pm", [...hs].sort((a, b) => a - b).join(","));
 
   const unknown = await fetch(`${BASE}/api/availability?service=suspension`);
   ok(unknown.status === 400, "API: unknown service refused by availability");
