@@ -160,11 +160,20 @@
   .plain[disabled] { display: none; }
 
   /* Confirm */
-  .review { display: grid; border-top: 1px solid var(--color-rule); }
+  /* The recap: one compact box, short lines (full wording is in the summary). */
+  .review { display: grid; margin: 0; padding: 0.25rem 1rem; border-radius: var(--radius-card); background: var(--color-card); border: 1px solid var(--color-rule); }
   .review[hidden] { display: none; }
-  .review > div { display: grid; grid-template-columns: 6.5rem 1fr auto; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--color-rule); align-items: baseline; }
-  .review dt { font-size: 0.9375rem; color: var(--color-ink-3); }
+  .review > div { display: grid; grid-template-columns: 4.75rem 1fr auto; gap: 0.75rem; padding: 0.6rem 0; align-items: baseline; font-size: 0.9375rem; }
+  .review > div + div { border-top: 1px solid var(--color-rule); }
+  .review dt { font-size: 0.8125rem; color: var(--color-ink-3); }
   .review dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .review .edit { font-size: 0.8125rem; }
+  @media (max-width: 30em) {
+    .review > div { grid-template-columns: 1fr auto; row-gap: 0.1rem; }
+    .review dt { grid-column: 1; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .review dd[data-review-v] { grid-column: 1; grid-row: 2; }
+    .review dd:last-child { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  }
   .edit { background: none; border: 0; padding: 0; cursor: pointer; font-size: 0.9375rem; color: var(--color-ink-2); }
   /* Booking notes (request, deposit, cancellation): a small red dot leads each one. */
   .note { position: relative; color: var(--color-ink-2); font-size: 0.9375rem; padding-left: 1.1rem; }
@@ -202,12 +211,12 @@
   [data-photo-status]:empty { display: none; }
   /* Updates by email / text: two toggles, side by side at every width */
   .notify { border: 0; margin: 0; padding: 0; display: grid; gap: 0.5rem; min-width: 0; }
-  .notify__legend { padding: 0; margin-bottom: 0.5rem; font-weight: 500; }
-  .notify__opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; max-width: 26rem; }
+  .notify__legend { padding: 0; margin-bottom: 0.4rem; font-weight: 500; font-size: 0.9375rem; }
+  .notify__opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; max-width: 22rem; }
   .notify__opt { position: relative; cursor: pointer; }
   .notify__opt input { position: absolute; opacity: 0; pointer-events: none; }
   .notify__opt span {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 48px; padding: 0 0.75rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 44px; padding: 0 0.6rem;
     border-radius: var(--radius-card); border: 1px solid var(--color-rule-2); background: var(--color-card);
     font-size: 0.9375rem; font-weight: 500; white-space: nowrap; transition: background 180ms var(--ease-soft), border-color 180ms var(--ease-soft);
   }
@@ -416,3 +425,73 @@
 .book__head { display: grid; gap: 1rem; margin-bottom: 3rem; max-width: 46rem; }
 .when__preview, .when__long { font-size: 0.9375rem; color: var(--color-ink-3); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .summary__talk p { margin: 0; }
+
+/* --- Review and pay: a checkout. Booking as a receipt (left), payment (right).
+   Neutral surfaces; Renn Bros red only for the top rule, icons and Pay. ------ */
+.book__grid.is-checkout { grid-template-columns: minmax(0, 1fr); }
+.book__grid.is-checkout .summary { display: none; }
+.co__back { display: inline-flex; align-items: center; gap: 0.35rem; width: fit-content; margin: -0.5rem 0 0.25rem; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; font-size: 0.9375rem; color: var(--color-ink-2); }
+.co__grid { display: grid; border: 1px solid var(--color-rule); border-radius: var(--radius-lg); overflow: hidden; background: var(--color-card); box-shadow: 0 30px 60px -44px rgb(var(--shadow-rgb) / 0.5); }
+@media (min-width: 56em) { .co__grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); } }
+.co__booking { background: var(--color-mist); border-top: 3px solid var(--color-red); padding: clamp(1.25rem, 3vw, 2.25rem); min-width: 0; }
+.co__pay { display: grid; gap: 1rem; align-content: start; padding: clamp(1.25rem, 3vw, 2.25rem); min-width: 0; }
+@media (min-width: 56em) { .co__pay { border-top: 3px solid transparent; } }
+.co__toggle { display: none; }
+.co__receipt { display: grid; gap: 1.25rem; }
+.co__brand .mark__imprint { display: block; }
+.co__appt { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 0.75rem; padding: 1rem 1.1rem; border-radius: var(--radius-card); background: var(--color-card); border: 1px solid var(--color-rule); }
+.co__appt p { grid-column: 1; margin: 0; display: flex; gap: 0.55rem; align-items: flex-start; }
+.co__appt svg { flex: none; margin-top: 0.15em; color: var(--color-red); }
+.co__when strong { font-family: var(--font-display); font-weight: 500; font-size: 1.125rem; letter-spacing: -0.01em; }
+.co__where { color: var(--color-ink-2); font-size: 0.9375rem; overflow-wrap: anywhere; }
+.co__appt .co__edit { grid-column: 2; grid-row: 1; }
+.co__edit { justify-self: end; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; font-size: 0.8125rem; color: var(--color-ink-2); }
+.co__block { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 0.75rem; align-items: baseline; }
+.co__items { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.co__items li { display: flex; justify-content: space-between; gap: 1rem; font-weight: 500; }
+.co__items li .num { font-weight: 400; color: var(--color-ink-2); white-space: nowrap; }
+.co__dur { margin: 0; font-size: 0.8125rem; color: var(--color-ink-3); }
+.co__rows { margin: 0; display: grid; border-top: 1px solid var(--color-rule-2); }
+.co__rows > div { display: grid; grid-template-columns: 4.25rem minmax(0, 1fr) auto; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid var(--color-rule-2); align-items: baseline; font-size: 0.9375rem; }
+.co__rows dt { font-size: 0.8125rem; color: var(--color-ink-3); }
+.co__rows dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.co .notify .help { font-size: 0.8125rem; }
+.co .notify__opts { max-width: none; }
+.co .notify__opt span { background: var(--color-card); min-height: 42px; }
+.co__totals { margin: 0; display: grid; gap: 0.5rem; font-size: 0.9375rem; }
+.co__totals > div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.co__totals dd { margin: 0; text-align: right; }
+.co__due { padding-top: 0.75rem; border-top: 1px solid var(--color-rule-2); font-weight: 600; }
+.co__due dd { font-family: var(--font-display); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; }
+.co__later { font-size: 0.875rem; color: var(--color-ink-3); }
+.co__pay-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.co__pay-title { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; letter-spacing: -0.01em; }
+.co__pay-amount { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 2rem; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; }
+.co__pay-hint { margin: -0.5rem 0 0; font-size: 0.875rem; color: var(--color-ink-3); max-width: none; }
+.co__methods { gap: 0.75rem; }
+.co .card__field { min-height: 0; }
+.co .wallets__or, .co__accepted, .co__secure { max-width: none; }
+.co__accepted { margin: 0; font-size: 0.8125rem; color: var(--color-ink-3); }
+.co__submit { width: 100%; justify-content: center; min-height: 52px; font-size: 1rem; }
+.co__secure { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.35rem 0.5rem; font-size: 0.8125rem; color: var(--color-ink-3); }
+.co__secure svg { color: var(--color-ok); }
+.co__next { margin: 0.25rem 0 0; padding: 1rem 0 0; list-style: none; counter-reset: n; display: grid; gap: 0.55rem; border-top: 1px solid var(--color-rule); font-size: 0.875rem; color: var(--color-ink-2); }
+.co__next li { counter-increment: n; display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 0.6rem; align-items: start; }
+.co__next li::before { content: counter(n); width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 600; background: var(--color-red-wash); color: var(--color-red-ink); }
+/* Phones: the receipt folds into one line above the payment panel. */
+@media (max-width: 40em) {
+  .co__booking { padding: 0; }
+  html.js .co__toggle {
+    display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 1rem 1.1rem; border: 0; background: none; cursor: pointer;
+    font: inherit; font-weight: 500; color: var(--color-ink); text-align: left;
+  }
+  .co__toggle-due { margin-left: auto; font-weight: 600; }
+  .co__toggle svg { transition: transform 240ms var(--ease-out); }
+  .co__booking.is-open .co__toggle svg { transform: rotate(180deg); }
+  .co__receipt { padding: 0 1.1rem 1.25rem; }
+  html.js .co__booking:not(.is-open) .co__receipt { display: none; }
+  html:not(.js) .co__receipt { padding-top: 1.1rem; }
+  .co__secure { grid-template-columns: auto minmax(0, 1fr); }
+  .co__secure .link { grid-column: 1 / -1; justify-self: start; }
+  .co__pay-amount { font-size: 1.75rem; }
+}

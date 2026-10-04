@@ -394,7 +394,7 @@ export const en = {
   },
 
   book: {
-    tire: { legend: "Your rim size", help: "It's on the tire's sidewall: in 225/45R18, the rim is 18″. Not sure? Pick your best guess and we'll confirm.", runFlat: "Run-flat tires (+$20)", err: "Choose your rim size.", pick: "Tires: choose one of the two." },
+    tire: { legend: "Your rim size", help: "It's on the tire's sidewall: in 225/45R18, the rim is 18″. Not sure? Pick your best guess and we'll confirm.", runFlat: "Run-flat tires (+$20)", runFlatShort: "run-flat", err: "Choose your rim size.", pick: "Tires: choose one of the two." },
     remember: {
       label: "Remember my details on this device for next time",
       help: "Saved in this browser only, so your next booking takes seconds.",
@@ -413,7 +413,7 @@ export const en = {
     coverage: { checking: "Checking your address…", in: "In our area.", out: "Just outside our area. Send the request anyway and we’ll tell you if we can make it." },
     steps: ["Service", "Where", "When", "You", "Confirm"],
     stepOf: (n: number, total: number, name: string) => `Step ${n} of ${total}: ${name}`,
-    titles: ["What does the car need?", "Where will the car be?", "Pick a day and time.", "About you and the car.", "Check and send."],
+    titles: ["What does the car need?", "Where will the car be?", "Pick a day and time.", "About you and the car.", "Review and pay."],
     service: {
       label: "Service",
       help: "Choose one or more. The times add up, and travel is counted once.",
@@ -482,7 +482,12 @@ export const en = {
       depositDue: (amount: string, pct: number, estimate: string) => `Deposit due now: ${amount}, ${pct}% of the ${estimate} estimate (before tax).`,
       depositRest: "It comes off your final bill; the rest, plus tax, is paid after the work.",
       payTitle: "Deposit due today",
+      sendTitle: "Send your request",
+      nextTitle: "What happens next",
+      next: ["We confirm your visit, usually within a few hours.", "You get the confirmation by email or text.", "We arrive at your address at the time you chose."],
       payHint: (pct: number) => `${pct}% of your estimate, before tax. It comes off your final bill.`,
+      dueMini: (amount: string) => `${amount} due today`,
+      duration: (time: string) => `About ${time} on site`,
       payEstimate: "Estimate, before tax",
       payDeposit: (pct: number) => `Deposit (${pct}%)`,
       payLater: "After the work",

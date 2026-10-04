@@ -1,11 +1,12 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretDown, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
 import { mountFlow } from "@/lib/book/flow";
+import { Wordmark } from "@/components/site/Wordmark";
 
 /**
  * Booking. One form, two ways to use it.
@@ -222,69 +223,85 @@ export function BookingForm({ lang }: { lang: Lang }) {
             </label>
           </fieldset>
 
-          {/* 5 · Confirm */}
-          <fieldset className="step" data-step="4">
+          {/* 5 · Review and pay: the booking as a receipt (left), payment (right) */}
+          <fieldset className="step co" data-step="4">
             <legend className="step__title d3" tabIndex={-1}>{b.titles[4]}</legend>
-            <dl className="review" data-review hidden>
-              {b.confirm.summary.map((k, i) => (
-                <div key={k}>
-                  <dt>{k}</dt>
-                  <dd data-review-v={i} />
-                  <dd><button className="edit link" type="button" data-goto={[0, 1, 2, 3, 3][i]}>{b.edit}</button></dd>
-                </div>
-              ))}
-            </dl>
-            <fieldset className="notify" aria-describedby="notify-help">
-              <legend className="notify__legend">{b.confirm.notify}</legend>
-              <div className="notify__opts">
-                <label className="notify__opt"><input type="checkbox" name="notifyEmail" defaultChecked /><span><EnvelopeSimple size={18} weight="light" aria-hidden />{b.confirm.notifyEmail}</span></label>
-                <label className="notify__opt"><input type="checkbox" name="notifyText" defaultChecked /><span><ChatText size={18} weight="light" aria-hidden />{b.confirm.notifyText}</span></label>
-              </div>
-              <span className="help" id="notify-help">{b.confirm.notifyHelp}</span>
-            </fieldset>
-            <p className="err" data-err="notify">{b.invalid.notify}</p>
-            <p className="note">{b.confirm.requestNote}</p>
-            {business.booking.depositPercent ? (
-              <section className="pay" aria-labelledby="pay-title" data-deposit>
-                <header className="pay__head">
-                  <div>
-                    <h3 className="pay__title" id="pay-title">{b.confirm.payTitle}</h3>
-                    <p className="pay__hint">{b.confirm.payHint(business.booking.depositPercent)}</p>
+            <button type="button" className="co__back link" data-goto="3"><ArrowLeft size={15} weight="bold" aria-hidden />{b.back}</button>
+            <div className="co__grid">
+              <section className="co__booking" aria-label={b.summary} data-co-booking>
+                <button type="button" className="co__toggle" aria-expanded="false" aria-controls="co-receipt" data-co-toggle>
+                  <span>{b.summary}</span>
+                  <span className="co__toggle-due num" data-co-due-mini />
+                  <CaretDown size={16} weight="bold" aria-hidden />
+                </button>
+                <div className="co__receipt" id="co-receipt">
+                  <div className="co__brand"><Wordmark /></div>
+                  <div className="co__appt">
+                    <p className="co__when"><CalendarBlank size={18} weight="bold" aria-hidden /><strong className="num" data-review-v="2" /></p>
+                    <p className="co__where"><MapPin size={18} weight="bold" aria-hidden /><span data-review-v="1" /></p>
+                    <button type="button" className="co__edit link" data-goto="2">{b.edit}</button>
                   </div>
-                  <p className="pay__amount num" data-pay-amount aria-live="polite" />
+                  <div className="co__block">
+                    <ul className="co__items" data-co-items />
+                    <p className="co__dur" data-review-v="0" />
+                    <button type="button" className="co__edit link" data-goto="0">{b.edit}</button>
+                  </div>
+                  <dl className="co__rows">
+                    <div><dt>{b.confirm.summary[3]}</dt><dd data-review-v="3" /><dd><button type="button" className="co__edit link" data-goto="3">{b.edit}</button></dd></div>
+                    <div><dt>{b.confirm.summary[4]}</dt><dd data-review-v="4" /><dd><button type="button" className="co__edit link" data-goto="3">{b.edit}</button></dd></div>
+                  </dl>
+                  <fieldset className="notify" aria-describedby="notify-help">
+                    <legend className="notify__legend">{b.confirm.notify}</legend>
+                    <div className="notify__opts">
+                      <label className="notify__opt"><input type="checkbox" name="notifyEmail" defaultChecked /><span><EnvelopeSimple size={17} weight="light" aria-hidden />{b.confirm.notifyEmail}</span></label>
+                      <label className="notify__opt"><input type="checkbox" name="notifyText" defaultChecked /><span><ChatText size={17} weight="light" aria-hidden />{b.confirm.notifyText}</span></label>
+                    </div>
+                    <span className="help" id="notify-help">{b.confirm.notifyHelp}</span>
+                    <p className="err" data-err="notify">{b.invalid.notify}</p>
+                  </fieldset>
+                  <dl className="co__totals">
+                    <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
+                    {business.booking.depositPercent ? (
+                      <>
+                        <div className="co__due"><dt>{b.confirm.payTitle}</dt><dd className="num" data-pay-deposit /></div>
+                        <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>
+                      </>
+                    ) : null}
+                  </dl>
+                </div>
+              </section>
+
+              <section className="co__pay" aria-labelledby="pay-title" data-deposit>
+                <header className="co__pay-head">
+                  <h3 className="co__pay-title" id="pay-title">{business.booking.depositPercent ? b.confirm.card : b.confirm.sendTitle}</h3>
+                  {business.booking.depositPercent ? <p className="co__pay-amount num" data-pay-amount aria-live="polite" /> : null}
                 </header>
-                <dl className="pay__lines">
-                  <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
-                  <div><dt>{b.confirm.payDeposit(business.booking.depositPercent)}</dt><dd className="num" data-pay-deposit /></div>
-                  <div className="pay__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>
-                </dl>
-                <div className="card pay__methods" data-card hidden>
+                {business.booking.depositPercent ? <p className="co__pay-hint">{b.confirm.payHint(business.booking.depositPercent)}</p> : <p className="co__pay-hint">{b.confirm.depositUnset}</p>}
+                <div className="card co__methods" data-card hidden>
                   <div className="wallets" data-wallets hidden>
                     <button type="button" id="apple-pay" className="wallet wallet--apple" aria-label="Apple Pay" hidden />
                     <div id="google-pay" className="wallet" hidden />
                     <p className="wallets__or"><span>{b.confirm.cardOr}</span></p>
                   </div>
                   <div id="card-field" className="card__field" />
-                  <p className="pay__accepted">{b.confirm.cardAccepted}</p>
+                  <p className="co__accepted">{b.confirm.cardAccepted}</p>
                 </div>
-                <p className="pay__foot">
+                <button className="btn btn--red co__submit" type="submit" data-submit>{b.confirm.submit}</button>
+                <p className="co__secure">
                   <LockSimple size={15} weight="bold" aria-hidden />
                   <span>{b.confirm.paySecure}</span>
                   <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.policy}</a>
                 </p>
+                <ol className="co__next" aria-label={b.confirm.nextTitle}>
+                  {b.confirm.next.map((n) => <li key={n}>{n}</li>)}
+                </ol>
               </section>
-            ) : (
-              <p className="note">{b.confirm.depositUnset}</p>
-            )}
-            {!business.booking.depositPercent && (
-              <p className="note">{cancel ? b.confirm.cancelSet(cancel) : b.confirm.cancelUnset} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.terms}</a></p>
-            )}
+            </div>
           </fieldset>
 
-          <div className="nav">
+          <div className="nav" data-nav>
             <button className="btn btn--ghost" type="button" data-back hidden><ArrowLeft size={16} weight="bold" aria-hidden />{b.back}</button>
             <button className="btn btn--red" type="button" data-next hidden>{b.next}<ArrowRight size={16} weight="bold" className="arrow" aria-hidden /></button>
-            <button className="btn btn--red" type="submit" data-submit>{b.confirm.submit}</button>
           </div>
         </form>
 

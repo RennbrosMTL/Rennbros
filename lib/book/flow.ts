@@ -3,7 +3,7 @@
  * check, a deposit card field when one is configured, and a JSON submit.
  * Everything here is an upgrade of a form that already works without it.
  */
-import { dict, href, money, duration, serviceIn, type Lang } from "@/lib/i18n";
+import { dict, href, money, price as priceText, duration, serviceIn, type Lang } from "@/lib/i18n";
 import { business } from "@/lib/business";
 import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
@@ -64,7 +64,6 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   form.noValidate = true;
   $<HTMLFieldSetElement>("[data-plain]").disabled = true;
   $("[data-when]").hidden = false;
-  $("[data-review]").hidden = false;
   next.hidden = false;
 
   let at = 0;
@@ -78,7 +77,10 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     progress.forEach((p, i) => (p.dataset.state = i < at ? "done" : i === at ? "now" : "todo"));
     back.hidden = at === 0;
     next.hidden = at === LAST;
-    submit.hidden = at !== LAST;
+    // The last step is a checkout: its own back link and pay button; the side
+    // summary steps aside (its content is in the receipt).
+    $("[data-nav]").hidden = at === LAST;
+    form.closest(".book__grid")?.classList.toggle("is-checkout", at === LAST);
     announce.textContent = b.stepOf(at + 1, LAST + 1, b.steps[at]);
     if (at === 2) loadSlots();
     if (at === LAST) fillReview();
@@ -450,10 +452,26 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   function fillReview() {
     const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
     const car = [value("year"), value("make"), value("model")].filter(Boolean).join(" ");
+    // The receipt: appointment first, then the services, car and contact.
+    const mins = list.reduce((n, s) => n + s.minutes, 0) + travel;
+    const at = value("startAt");
+    const day = at ? new Intl.DateTimeFormat(t.locale, { timeZone: TZ, weekday: "long", month: "long", day: "numeric" }).format(new Date(at)) : "";
+    $("[data-co-items]").replaceChildren(
+      ...list.map((s) => {
+        const li = document.createElement("li");
+        const name = Object.assign(document.createElement("span"), { textContent: s.name + (s.slug === "tire-install" && rim() ? ` · ${t.fmt.rims[rim()!]}${runFlat() ? ` · ${b.tire.runFlatShort}` : ""}` : "") });
+        const cost = Object.assign(document.createElement("span"), {
+          className: "num",
+          textContent: s.slug === "tire-install" && rim() ? money(cfg.lang, priceOf(s)) : priceText(cfg.lang, s),
+        });
+        li.append(name, cost);
+        return li;
+      }),
+    );
     const rows = [
-      list.length ? `${list.map((s) => s.name).join(" + ")} · ${totals(list)}` : "",
+      list.length ? b.confirm.duration(duration(cfg.lang, mins)) : "",
       `${[value("address"), value("postal").toUpperCase()].filter(Boolean).join(", ")} · ${value("parking")}`,
-      value("startAt") ? when(value("startAt")) : "",
+      at ? `${day.charAt(0).toUpperCase()}${day.slice(1)} · ${clock(at)}` : "",
       car + (value("vin") ? ` · ${value("vin").toUpperCase()}` : ""),
       [value("name"), value("phone"), value("email")].filter(Boolean).join(" · "),
     ];
@@ -466,6 +484,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       const due = money(cfg.lang, cents / 100, true);
       $("[data-pay-amount]").textContent = due;
       $("[data-pay-deposit]").textContent = due;
+      $("[data-co-due-mini]").textContent = b.confirm.dueMini(due);
       $("[data-pay-estimate]").textContent = money(cfg.lang, estimateOf(picked(), rim(), runFlat()), true);
       // The button says what happens: pay, then send.
       if (cfg.square.appId && cents > 0) submit.textContent = b.confirm.payAndSend(due);
@@ -671,6 +690,15 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     if (n === "notifyEmail" || n === "notifyText") $('[data-err="notify"]').classList.remove("on");
   });
 
+  // Phones: the receipt folds into one line above the payment panel.
+  const coBooking = $("[data-co-booking]");
+  const coToggle = $<HTMLButtonElement>("[data-co-toggle]");
+  const openReceipt = (open: boolean) => {
+    coBooking.classList.toggle("is-open", open);
+    coToggle.setAttribute("aria-expanded", String(open));
+  };
+  coToggle.addEventListener("click", () => openReceipt(!coBooking.classList.contains("is-open")));
+
   // --- Send ---------------------------------------------------------------
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -680,6 +708,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     const anyNotify = ["notifyEmail", "notifyText"].some((k) => form.querySelector<HTMLInputElement>(`[name="${k}"]`)?.checked);
     notifyErr.classList.toggle("on", !anyNotify);
     if (!anyNotify) {
+      openReceipt(true);
       form.querySelector<HTMLElement>(".notify")?.scrollIntoView({ block: "center" });
       return;
     }

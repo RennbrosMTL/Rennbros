@@ -397,7 +397,7 @@ export const fr: Dict = {
   },
 
   book: {
-    tire: { legend: "Taille de vos jantes", help: "Elle est inscrite sur le flanc du pneu : dans 225/45R18, la jante fait 18 po. Pas certain? Choisissez au mieux, on confirmera.", runFlat: "Pneus à roulage à plat (+20 $)", err: "Choisissez la taille des jantes.", pick: "Pneus : choisissez l’un des deux." },
+    tire: { legend: "Taille de vos jantes", help: "Elle est inscrite sur le flanc du pneu : dans 225/45R18, la jante fait 18 po. Pas certain? Choisissez au mieux, on confirmera.", runFlat: "Pneus à roulage à plat (+20 $)", runFlatShort: "roulage à plat", err: "Choisissez la taille des jantes.", pick: "Pneus : choisissez l’un des deux." },
     remember: {
       label: "Mémoriser mes coordonnées sur cet appareil pour la prochaine fois",
       help: "Enregistrées dans ce navigateur seulement, pour que votre prochaine réservation prenne quelques secondes.",
@@ -416,7 +416,7 @@ export const fr: Dict = {
     coverage: { checking: "Vérification de l’adresse…", in: "Dans notre secteur.", out: "Juste à l’extérieur de notre secteur. Envoyez la demande quand même : nous vous dirons si c’est possible." },
     steps: ["Service", "Où", "Quand", "Vous", "Confirmer"],
     stepOf: (n: number, total: number, name: string) => `Étape ${n} sur ${total} : ${name}`,
-    titles: ["De quoi la voiture a-t-elle besoin?", "Où sera la voiture?", "Choisissez le jour et l’heure.", "Vous et la voiture.", "Vérifiez et envoyez."],
+    titles: ["De quoi la voiture a-t-elle besoin?", "Où sera la voiture?", "Choisissez le jour et l’heure.", "Vous et la voiture.", "Vérifiez et payez."],
     service: {
       label: "Service",
       help: "Choisissez-en un ou plusieurs. Les durées s’additionnent, et le déplacement n’est compté qu’une fois.",
@@ -485,7 +485,12 @@ export const fr: Dict = {
       depositDue: (amount: string, pct: number, estimate: string) => `Dépôt à payer maintenant : ${amount}, soit ${pct} % de l’estimation de ${estimate} (avant taxes).`,
       depositRest: "Il est déduit de votre facture finale; le reste, taxes en sus, se paie après les travaux.",
       payTitle: "Dépôt à payer aujourd’hui",
+      sendTitle: "Envoyer votre demande",
+      nextTitle: "La suite",
+      next: ["Nous confirmons votre visite, habituellement en quelques heures.", "Vous recevez la confirmation par courriel ou texto.", "Nous arrivons à votre adresse à l’heure choisie."],
       payHint: (pct: number) => `${pct} % de votre estimation, avant taxes. Il est déduit de votre facture finale.`,
+      dueMini: (amount: string) => `${amount} à payer aujourd’hui`,
+      duration: (time: string) => `Environ ${time} sur place`,
       payEstimate: "Estimation, avant taxes",
       payDeposit: (pct: number) => `Dépôt (${pct} %)`,
       payLater: "Après les travaux",
