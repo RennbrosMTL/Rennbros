@@ -176,18 +176,23 @@ lives in Netlify's settings: never in the code, a commit, a chat or an email.
 
 ## Deploying
 
-`main` is the source of truth. Every release is committed and pushed here
-first, then deployed to Netlify from a clean checkout of that exact commit:
+`main` is the source of truth. **Pushing to `main` deploys the site**: Netlify
+builds every push to the main branch (`netlify.toml`: `npm run build`, Node 22,
+Next.js runtime) and publishes it to rennbros.com.
 
 ```bash
-git push origin main
+git push origin main      # Netlify builds and publishes this commit
+```
+
+If a Git build can't run (for example, if the repository is private on
+Netlify's free plan, which only builds commits by Netlify team members),
+publish the same commit from a clean checkout instead:
+
+```bash
 npm run deploy            # builds origin/main in a clean checkout and publishes it
 ```
 
 (`scripts/deploy.sh`; needs the Netlify CLI logged in to the Renn Bros team.)
-
-Automatic Git builds are paused on Netlify: on the current plan, builds from a
-private repository only run for commits by Netlify team members.
 
 To check for anything still unfinished, run:
 
