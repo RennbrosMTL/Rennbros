@@ -195,7 +195,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <label className="btn btn--ghost btn--sm scan__btn">
                 <Camera size={18} weight="light" aria-hidden />
                 {b.you.vinScan}
-                <input className="sr-only" type="file" accept="image/*" capture="environment" data-vin-photo />
+                <input className="sr-only" type="file" accept="image/*" data-vin-photo />
               </label>
               <span className="help scan__status" data-vin-status aria-live="polite" />
             </div>
@@ -245,8 +245,13 @@ export function BookingForm({ lang }: { lang: Lang }) {
             )}
             <div className="card" data-card hidden>
               <p className="field"><span>{b.confirm.card}</span></p>
+              <div className="wallets" data-wallets hidden>
+                <button type="button" id="apple-pay" className="wallet wallet--apple" aria-label="Apple Pay" hidden />
+                <div id="google-pay" className="wallet" hidden />
+                <p className="wallets__or"><span>{b.confirm.cardOr}</span></p>
+              </div>
               <div id="card-field" className="card__field" />
-              <p className="help">{b.confirm.cardSecure}</p>
+              <p className="help">{b.confirm.cardAccepted}</p>
             </div>
             {!business.booking.depositPercent && (
               <p className="note">{cancel ? b.confirm.cancelSet(cancel) : b.confirm.cancelUnset} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.terms}</a></p>

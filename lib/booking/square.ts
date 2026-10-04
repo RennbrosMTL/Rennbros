@@ -42,13 +42,22 @@ export type Slot = {
 
 /** When visits may start and by when they must be finished (Montréal time). */
 export type Schedule = {
-  /** Arrival hours, e.g. [8, 11, 14]. */
+  /** Arrival hours, e.g. [8, 9, … 16]. */
   arrivals: number[];
   /** Weekdays that take bookings, 0 = Sunday. */
   days: number[];
-  /** The hour by which a visit must be finished. */
+  /** The hour by which the work must be finished. */
   finishBy: number;
+  /** Travel and prep kept free after every visit, in minutes (cut short at
+   *  the end of the day: nothing follows the last visit). */
+  buffer: number;
 };
+
+/** The buffer a visit starting then gets: the full buffer, or what's left of the day. */
+export function bufferAfter(schedule: Schedule, startAt: string, minutes: number) {
+  const { hour, minute } = localTime(startAt);
+  return Math.max(0, Math.min(schedule.buffer, schedule.finishBy * 60 - (hour * 60 + minute + minutes)));
+}
 
 /** Minutes for a set of services: each service's time, plus travel once. */
 export type Timing = { total(slugs: string[]): number; each(slug: string): number };
@@ -109,6 +118,8 @@ export type SquareEnv = {
   teamMemberId?: string;
   /** Site service slug -> Square catalog service variation id. */
   serviceVariations: Record<string, string>;
+  /** The short service used to map free time (default: the shortest mapped). */
+  probeService?: string;
 };
 
 /* ------------------------------------------------------------------------ */
@@ -225,47 +236,52 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     async availability(slugs, from, days) {
       const start = new Date(from);
       const end = new Date(start.getTime() + Math.min(Math.max(days, 1), 32) * 86400000);
-      // One segment filter per service: Square finds times when the whole
-      // sequence fits back to back.
+      // Map free time with the shortest service (30 min): Square answers with
+      // every half hour that's open, after its hours, bookings, blocked time
+      // and minimum notice. A visit can start at an arrival hour when every
+      // half hour of the work plus the buffer after it is open. The offer is
+      // the same every day, whatever Square's own time-slot setting.
+      const probe =
+        env.probeService && env.serviceVariations[env.probeService]
+          ? env.probeService
+          : Object.keys(env.serviceVariations).sort((a, b) => timing.each(a) - timing.each(b))[0];
       const r = await call<{
-        availabilities?: {
-          start_at: string;
-          appointment_segments: {
-            duration_minutes: number;
-            team_member_id: string;
-            service_variation_id: string;
-            service_variation_version: number;
-          }[];
-        }[];
+        availabilities?: { start_at: string; appointment_segments: { duration_minutes: number }[] }[];
       }>("/v2/bookings/availability/search", {
         body: {
           query: {
             filter: {
               start_at_range: { start_at: start.toISOString(), end_at: end.toISOString() },
               location_id: env.locationId,
-              segment_filters: slugs.map((slug) => ({
-                service_variation_id: variation(slug),
-                ...(env.teamMemberId ? { team_member_id_filter: { any: [env.teamMemberId] } } : {}),
-              })),
+              segment_filters: [
+                {
+                  service_variation_id: variation(probe),
+                  ...(env.teamMemberId ? { team_member_id_filter: { any: [env.teamMemberId] } } : {}),
+                },
+              ],
             },
           },
         },
       });
-      const bySlug = Object.fromEntries(Object.entries(env.serviceVariations).map(([k, v]) => [v, k]));
+      const open = new Set((r.availabilities ?? []).map((a) => Date.parse(a.start_at)));
+      const step = r.availabilities?.[0]?.appointment_segments?.[0]?.duration_minutes || timing.each(probe);
       const minutes = timing.total(slugs);
-      // Square offers whatever its own settings allow; keep the site's windows.
-      return (r.availabilities ?? [])
-        .filter((a) => fits(schedule, a.start_at, minutes))
-        .map((a) => ({
-          startAt: a.start_at,
-          minutes,
-          segments: a.appointment_segments.map((s) => ({
-            slug: bySlug[s.service_variation_id] ?? "",
-            minutes: s.duration_minutes,
-            teamMemberId: s.team_member_id,
-            serviceVariationVersion: s.service_variation_version,
-          })),
-        }));
+      const out: Slot[] = [];
+      for (let d = 0; d <= Math.min(days, 32); d++) {
+        const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(new Date(start.getTime() + d * 86400000));
+        const dow = new Date(`${ymd}T12:00:00Z`).getUTCDay();
+        if (!schedule.days.includes(dow)) continue;
+        for (const h of schedule.arrivals) {
+          if (h * 60 + minutes > schedule.finishBy * 60) continue;
+          const startAt = zoned(ymd, h);
+          const need = minutes + bufferAfter(schedule, startAt, minutes);
+          const t0 = Date.parse(startAt);
+          let free = true;
+          for (let m = 0; m < need && free; m += step) free = open.has(t0 + m * 60000);
+          if (free) out.push({ startAt, minutes });
+        }
+      }
+      return out.filter((x) => new Date(x.startAt) >= start && new Date(x.startAt) < end);
     },
 
     async book(input) {
@@ -284,18 +300,23 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
           };
         }),
       );
+      // Travel and prep after the visit, booked into Square as part of the
+      // last service so the next customer can't take that time.
+      const buffer = bufferAfter(schedule, input.slot.startAt, segments.reduce((n, x) => n + x.duration_minutes, 0));
+      const buffered = segments.map((x, i) => (i === segments.length - 1 ? { ...x, duration_minutes: x.duration_minutes + buffer } : x));
       const key = input.idempotencyKey ?? uuid();
+      let withBuffer = buffer > 0;
       const create = (where: object, retry = false) =>
         call<{ booking: { id: string; status: string } }>("/v2/bookings", {
           body: {
-            idempotency_key: retry ? `${key}-n` : key,
+            idempotency_key: `${key}${retry ? "-n" : ""}${withBuffer ? "" : "-p"}`,
             booking: {
               start_at: input.slot.startAt,
               location_id: env.locationId,
               customer_id: customerId,
               ...where,
               customer_note: input.note.slice(0, 4096),
-              appointment_segments: segments,
+              appointment_segments: withBuffer ? buffered : segments,
             },
           },
         });
@@ -303,13 +324,24 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       // (street, city, province, postal code). If Square still refuses the
       // address, book anyway: the address is in the note, and no customer's
       // booking should fail over address formatting.
+      const attempt = async () => {
+        try {
+          return input.place ? await create({ location_type: "CUSTOMER_LOCATION", address: input.place }) : await create({});
+        } catch (e) {
+          if (!(input.place && e instanceof SquareError && e.status === 400 && JSON.stringify(e.detail).includes("address"))) throw e;
+          console.warn("[book] Square refused the address; booking with the address in the note", JSON.stringify(e.detail));
+          return create({}, true);
+        }
+      };
       let r: { booking: { id: string; status: string } };
       try {
-        r = input.place ? await create({ location_type: "CUSTOMER_LOCATION", address: input.place }) : await create({});
+        r = await attempt();
       } catch (e) {
-        if (!(input.place && e instanceof SquareError && e.status === 400 && JSON.stringify(e.detail).includes("address"))) throw e;
-        console.warn("[book] Square refused the address; booking with the address in the note", JSON.stringify(e.detail));
-        r = await create({}, true);
+        // If Square won't take the longer last segment, book the services alone.
+        if (!(withBuffer && e instanceof SquareError && e.status === 400)) throw e;
+        console.warn("[book] Square refused the travel buffer; booking without it", JSON.stringify(e.detail));
+        withBuffer = false;
+        r = await attempt();
       }
       const status = r.booking.status === "ACCEPTED" ? "ACCEPTED" : "PENDING";
       return { id: r.booking.id, status, customerId };
@@ -355,11 +387,8 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
  * long combined job never lands on top of another booking.
  */
 export function standIn(timing: Timing, schedule: Schedule): BookingProvider {
-  const taken = (key: string) => {
-    let h = 2166136261;
-    for (const c of key) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
-    return (h >>> 0) % 100 < 30;
-  };
+  // No pretend bookings: the preview offers every hour the schedule allows.
+  const taken = (_key: string) => false;
   return {
     name: "stand-in",
     live: false,

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CalendarBlank, CaretUp, X } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, serviceIn, type Lang } from "@/lib/i18n";
-import { useVisit } from "@/lib/visit";
+import { ADDED, useVisit } from "@/lib/visit";
 
 const TZ = "America/Toronto";
 type Slot = { startAt: string; minutes: number };
@@ -52,6 +52,19 @@ export function VisitPanel({ lang, floating = false }: { lang: Lang; floating?: 
     if (!list.length) setOpen(false);
   }, [list.length]);
 
+  // Adding a service opens the panel, so the visit is in view right away;
+  // the bar (or Esc) folds it back down.
+  useEffect(() => {
+    const onAdded = () => setOpen(true);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener(ADDED, onAdded);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener(ADDED, onAdded);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   const when = (iso: string) => {
     const d = new Date(iso);
     const day = new Intl.DateTimeFormat(t.locale, { timeZone: TZ, weekday: "short", day: "numeric", month: "short" }).format(d);
@@ -94,7 +107,7 @@ export function VisitPanel({ lang, floating = false }: { lang: Lang; floating?: 
             </ul>
             <dl className="visit__sums">
               <div><dt>{v.total}</dt><dd className="visit__total num">{total}</dd></div>
-              <div><dt>{v.time}</dt><dd className="num">{duration(lang, minutes)}<span className="visit__plus"> {v.travel(duration(lang, business.booking.travelMinutes))}</span></dd></div>
+              <div><dt>{v.time}</dt><dd className="num">{duration(lang, minutes)}{business.booking.travelMinutes > 0 && <span className="visit__plus"> {v.travel(duration(lang, business.booking.travelMinutes))}</span>}</dd></div>
               <div className="visit__next">
                 <dt><CalendarBlank size={16} weight="light" aria-hidden /> {v.next}</dt>
                 <dd className="num" aria-live="polite">{nextText}</dd>

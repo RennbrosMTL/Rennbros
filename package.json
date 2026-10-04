@@ -16,7 +16,8 @@
     "test:crawl": "node scripts/crawl.mjs",
     "map:snapshot": "node scripts/map-snapshot.mjs http://localhost:3000 /area",
     "test:deposit": "tsx scripts/deposit-scenarios.mts",
-    "deploy": "bash scripts/deploy.sh"
+    "deploy": "bash scripts/deploy.sh",
+    "test:calendar": "tsx scripts/calendar-scenarios.mts"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.2",

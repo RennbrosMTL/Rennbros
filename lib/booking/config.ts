@@ -23,7 +23,7 @@ import { business } from "@/lib/business";
 
 const env = process.env;
 
-/** Each service's own time, and a visit's total: the services plus travel once. */
+/** Each service's own time, and a visit's total (the travel buffer is kept separately, in schedule). */
 export const timing = {
   each: (slug: string) => bySlug(slug)?.minutes ?? 60,
   total: (slugs: string[]) => slugs.reduce((m, s) => m + (bySlug(s)?.minutes ?? 60), 0) + business.booking.travelMinutes,
@@ -33,6 +33,7 @@ export const schedule = {
   arrivals: [...business.booking.arrivals] as number[],
   days: [...business.hours.open.days] as number[],
   finishBy: business.booking.finishBy,
+  buffer: business.booking.bufferMinutes,
 };
 
 export const provider = () =>
@@ -43,6 +44,7 @@ export const provider = () =>
       locationId: env.SQUARE_LOCATION_ID,
       teamMemberId: env.SQUARE_TEAM_MEMBER_ID,
       serviceVariations: parseServiceMap(env.SQUARE_SERVICES),
+      probeService: env.SQUARE_PROBE_SERVICE,
     },
     timing,
     schedule,

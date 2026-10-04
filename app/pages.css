@@ -55,7 +55,8 @@
   .choice__meta { font-size: 0.9375rem; color: var(--color-ink-3); }
   /* Tyres mounted on the customer's rims: the rim size sets the price. */
   .tireopts { grid-column: 1 / -1; display: grid; gap: 0.875rem; padding: 1.25rem 1.5rem; border-radius: var(--radius-card); background: color-mix(in srgb, var(--color-red) 5%, var(--color-card)); border: 1px solid var(--color-rule-2); }
-  html.js .tireopts:not(.on) { display: none; }
+  /* Rim sizes only while "Tire change and balancing" is ticked (CSS alone: no flash, works without JS). */
+  form:not(:has(input[name="service"][value="tire-install"]:checked)) .tireopts { display: none; }
   .tireopts .help { margin: 0; }
   .step__help { margin-top: calc(1rem * -1); }
   .total { font-weight: 500; min-height: 1.5em; }
@@ -145,11 +146,12 @@
   .pick__side { display: grid; gap: 1rem; align-content: start; }
   .pick__day { font-family: var(--font-display); font-weight: 500; font-size: var(--d4); letter-spacing: -0.01em; text-transform: none; }
   .pick__day::first-letter { text-transform: uppercase; }
-  .windows { display: grid; gap: 0.625rem; }
+  .windows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  @media (max-width: 22em) { .windows { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .windows .win {
-    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-    padding: 1rem 1.5rem; border-radius: var(--radius-card); cursor: pointer; text-align: left;
-    background: var(--color-card); border: 1px solid var(--color-rule-2); font: inherit; color: inherit;
+    display: grid; place-items: center; min-height: 48px; padding: 0.7rem 0.5rem;
+    border-radius: var(--radius-card); cursor: pointer; white-space: nowrap;
+    background: var(--color-card); border: 1px solid var(--color-rule-2); font: inherit; font-weight: 500; color: inherit;
   }
   .windows .win:hover { border-color: var(--color-ink-4); }
   .windows .win[aria-checked="true"] { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
@@ -177,6 +179,12 @@
   .card { display: grid; gap: 0.625rem; }
   .card[hidden] { display: none; }
   .card__field { min-height: 90px; }
+  .wallets { display: grid; gap: 0.6rem; }
+  .wallets[hidden], .wallet[hidden] { display: none; }
+  .wallet { min-height: 48px; width: 100%; border-radius: 999px; overflow: hidden; }
+  .wallet--apple { -webkit-appearance: -apple-pay-button; appearance: auto; -apple-pay-button-type: pay; -apple-pay-button-style: black; border: 0; cursor: pointer; }
+  .wallets__or { display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--color-ink-3); }
+  .wallets__or::before, .wallets__or::after { content: ""; flex: 1; height: 1px; background: var(--color-rule); }
   /* VIN from a photo, and booking photos */
   .scan { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.875rem; margin-top: -0.5rem; }
   .scan[hidden], .photos[hidden] { display: none; }

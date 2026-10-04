@@ -57,15 +57,26 @@ const withAdded = (now: string[], slug: string) => {
   return [...others, slug];
 };
 
+/** Fired when someone adds a service (not on page load), so the visit panel can open. */
+export const ADDED = "rennbros:visit-added";
+const announce = (slug: string) => window.dispatchEvent(new CustomEvent(ADDED, { detail: slug }));
+
 export function useVisit() {
   const slugs = useSyncExternalStore(subscribe, read, () => EMPTY);
   const toggle = useCallback((slug: string) => {
     const now = read();
-    write(now.includes(slug) ? now.filter((s) => s !== slug) : withAdded(now, slug));
+    if (now.includes(slug)) write(now.filter((s) => s !== slug));
+    else {
+      write(withAdded(now, slug));
+      announce(slug);
+    }
   }, []);
   const add = useCallback((slug: string) => {
     const now = read();
-    if (!now.includes(slug)) write(withAdded(now, slug));
+    if (!now.includes(slug)) {
+      write(withAdded(now, slug));
+      announce(slug);
+    }
   }, []);
   const remove = useCallback((slug: string) => write(read().filter((s) => s !== slug)), []);
   const clear = useCallback(() => write([]), []);

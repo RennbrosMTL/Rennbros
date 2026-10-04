@@ -56,12 +56,15 @@ export const business = {
   },
 
   booking: {
-    /** Arrival windows, three hours apart, Montréal time. */
-    arrivals: [8, 11, 14],
-    /** A visit, however many services, must be finished by this hour. */
+    /** Arrival times, every hour from 8 to 4, Montréal time. */
+    arrivals: [8, 9, 10, 11, 12, 13, 14, 15, 16],
+    /** The work, however many services, must be finished by this hour. */
     finishBy: 17,
+    /** Travel and prep kept free after every visit (not shown to customers). */
+    bufferMinutes: 60,
     leadTimeHours: 24,
-    travelMinutes: 30,
+    /** Travel is in the buffer now; nothing is added to the time shown. */
+    travelMinutes: 0,
     /** Percent of the pre-tax estimate taken as a deposit when booking online
      *  (20 = 20%), confirmed 2026-10-01. Refundable in full when cancelled at
      *  least 24 h before the arrival window. null turns the deposit off. */

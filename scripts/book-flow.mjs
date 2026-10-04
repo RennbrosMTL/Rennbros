@@ -56,11 +56,11 @@ for (const lang of ["en", "fr"]) {
   // The form is enhanced once the page is live; act after that, as a person would.
   await p.waitForSelector("[data-next]:not([hidden])", { timeout: 15000 });
   ok(await p.$eval('input[name="service"][value="brakes"]', (el) => el.checked), `${lang}: ?service= preselects brakes`);
-  // A second service: the total must add up (brakes 120 + mounting 90 + travel 30 = 4 h;
+  // A second service: the total must add up (brakes 120 + mounting 90 = 3 h 30;
   // $125/h + mounting from $100 = from $225).
   await p.click('label.choice:has(input[value="tire-install"])');
   const total = await p.$eval("[data-total]", (e) => e.textContent);
-  ok(/225/.test(total) && /4 h/.test(total), `${lang}: two services add up`, total);
+  ok(/225/.test(total) && /3 h/.test(total), `${lang}: two services add up`, total);
   // Costco-style tyres: mounting asks for the rim size, and it sets the price.
   ok(await visible(p, "[data-tire-opts]"), `${lang}: mounting shows the rim sizes`);
   await tap(p, "[data-next]");
@@ -208,14 +208,14 @@ for (const lang of ["en", "fr"]) {
   });
   ok(soon.status === 400 && (await soon.json()).error === "lead_time", "API: a start inside the lead time is refused");
 
-  // Combined visits: every window is one of the four arrivals and finishes by 8 pm.
+  // Combined visits: hourly starts, the work done by 5 pm.
   const combo = await (await fetch(`${BASE}/api/availability?services=brakes,tire-install,oil-change&days=14`)).json();
   const hours = combo.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt))));
-  ok(combo.slots.length > 0 && combo.slots.every((x) => x.minutes === 300), "API: three services take 5 h in total", `${combo.slots.length} windows`);
-  ok(hours.every((h) => [8, 11].includes(h)), "API: 5 h visits start at 8 or 11 (done by 5 pm)", [...new Set(hours)].join(","));
+  ok(combo.slots.length > 0 && combo.slots.every((x) => x.minutes === 270), "API: three services take 4 h 30 in total", `${combo.slots.length} windows`);
+  ok(hours.every((h) => h >= 8 && h <= 12), "API: 4 h 30 visits start 8 to 12 (done by 5 pm)", [...new Set(hours)].join(","));
   const single = await (await fetch(`${BASE}/api/availability?services=oil-change&days=14`)).json();
   const hs = new Set(single.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt)))));
-  ok([...hs].every((h) => [8, 11, 14].includes(h)) && hs.has(14) && !hs.has(17), "API: a short visit can take the 2 pm window, never 5 pm", [...hs].sort((a, b) => a - b).join(","));
+  ok([...hs].every((h) => h >= 8 && h <= 16) && hs.has(16) && !hs.has(17), "API: a 1 h visit can start any hour up to 4 pm, never 5 pm", [...hs].sort((a, b) => a - b).join(","));
 
   const unknown = await fetch(`${BASE}/api/availability?service=suspension`);
   ok(unknown.status === 400, "API: unknown service refused by availability");

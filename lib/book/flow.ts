@@ -295,7 +295,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const ymd = (iso: string) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date(iso));
   const hourOf = (iso: string) => Number(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }).format(new Date(iso)));
   const clock = (iso: string) => new Intl.DateTimeFormat(t.locale, { timeZone: TZ, hour: "numeric", minute: "2-digit" }).format(new Date(iso));
-  const windowName = (h: number) => (h < 10 ? b.when.morning : h < 13 ? b.when.lateMorning : h < 16 ? b.when.afternoon : b.when.evening);
+  const windowName = (h: number) => (h < 12 ? b.when.morning : b.when.afternoon);
   const when = (iso: string) =>
     `${new Intl.DateTimeFormat(t.locale, { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(new Date(iso))} · ${windowName(hourOf(iso))} (${clock(iso)})`;
 
@@ -433,10 +433,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
         btn.className = "win";
         btn.setAttribute("role", "radio");
         btn.setAttribute("aria-checked", String(s.startAt === current));
-        const label = windowName(hourOf(s.startAt));
-        btn.innerHTML = `<strong></strong><span></span>`;
-        btn.querySelector("strong")!.textContent = label;
-        btn.querySelector("span")!.textContent = clock(s.startAt);
+        btn.textContent = clock(s.startAt);
+        btn.setAttribute("aria-label", `${windowName(hourOf(s.startAt))}, ${clock(s.startAt)}`);
         btn.addEventListener("click", () => {
           setSlot(s);
           $$(".win", windows).forEach((w) => w.setAttribute("aria-checked", String(w === btn)));
@@ -463,6 +461,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     // The deposit, by the same rule the server charges with.
     const due = form.querySelector("[data-deposit-due]");
     const pct = business.booking.depositPercent;
+    try { paymentRequest?.update({ total: total() }); } catch {}
     if (due && pct) {
       const cents = depositCents(picked(), pct, rim(), runFlat());
       due.textContent = b.confirm.depositDue(money(cfg.lang, cents / 100, true), pct, money(cfg.lang, estimateOf(picked(), rim(), runFlat())));
@@ -485,23 +484,71 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     return attempt;
   };
 
-  // --- Deposit card (Square Web Payments SDK) ------------------------------
-  let card: { tokenize(): Promise<{ status: string; token?: string }> } | null = null;
+  // --- Deposit: card, Google Pay, Apple Pay (Square Web Payments SDK) -------
+  // The card field takes credit and debit cards (Visa Debit, Debit Mastercard).
+  // Google Pay and Apple Pay appear where the device supports them (Apple Pay
+  // also needs the domain registered with Square). A wallet button checks the
+  // form, gets a token for the deposit amount, then sends the booking.
+  type Tokenizer = { tokenize(): Promise<{ status: string; token?: string }> };
+  let card: Tokenizer | null = null;
+  let paymentRequest: { update(o: unknown): void } | null = null;
   const pct = business.booking.depositPercent;
+  const depositNow = () => (pct ? depositCents(picked(), pct, rim(), runFlat()) : 0);
+  const total = () => ({ amount: (depositNow() / 100).toFixed(2), label: b.confirm.card });
+  /** After a wallet tokenizes, send the booking with that token. */
+  const payWith = async (w: Tokenizer) => {
+    for (let n = 0; n < LAST; n++) if (!check(n)) return go(n);
+    try {
+      const tok = await w.tokenize();
+      if (tok.status !== "OK" || !tok.token) return; // closed or cancelled the wallet sheet
+      attemptFor().token = tok.token;
+      form.requestSubmit();
+    } catch (e) {
+      console.error("[wallet]", e);
+    }
+  };
   if (pct && cfg.square.appId && cfg.square.locationId) {
     const box = $("[data-card]");
     box.hidden = false;
     const s = document.createElement("script");
     s.src = cfg.square.production ? "https://web.squarecdn.com/v1/square.js" : "https://sandbox.web.squarecdn.com/v1/square.js";
     s.onload = async () => {
+      let payments: any;
       try {
-        const payments = (window as any).Square.payments(cfg.square.appId, cfg.square.locationId);
+        payments = (window as any).Square.payments(cfg.square.appId, cfg.square.locationId);
         const c = await payments.card();
         await c.attach("#card-field");
         card = c;
       } catch (e) {
         console.error("[card]", e);
         box.hidden = true;
+        return;
+      }
+      try {
+        paymentRequest = payments.paymentRequest({ countryCode: "CA", currencyCode: "CAD", total: total() });
+      } catch (e) {
+        console.error("[wallet]", e);
+        return;
+      }
+      const wallets = $("[data-wallets]");
+      try {
+        const g = await payments.googlePay(paymentRequest);
+        const el = document.getElementById("google-pay")!;
+        el.hidden = false;
+        await g.attach("#google-pay", { buttonColor: "black", buttonSizeMode: "fill", buttonType: "pay" });
+        el.addEventListener("click", () => payWith(g));
+        wallets.hidden = false;
+      } catch {
+        /* Google Pay not available on this device or browser */
+      }
+      try {
+        const a = await payments.applePay(paymentRequest);
+        const el = document.getElementById("apple-pay")!;
+        el.hidden = false;
+        el.addEventListener("click", () => payWith(a));
+        wallets.hidden = false;
+      } catch {
+        /* Apple Pay: not Safari, no card in Wallet, or domain not registered */
       }
     };
     document.head.append(s);
@@ -632,14 +679,14 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       body.services = picked();
       const a = attemptFor();
       body.attempt = a.id;
-      if (pct && cfg.square.appId && depositCents(picked(), pct, rim(), runFlat()) > 0) {
-        if (!card) {
+      if (pct && cfg.square.appId && depositNow() > 0) {
+        if (!card && !a.token) {
           alertText.textContent = b.confirm.cardMissing;
           alert.classList.add("on");
           alert.focus();
           return;
         }
-        if (!a.token) {
+        if (!a.token && card) {
           const tok = await card.tokenize();
           if (tok.status !== "OK" || !tok.token) {
             // Square's field shows what's wrong with the card details itself.
