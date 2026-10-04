@@ -427,18 +427,19 @@
 .summary__talk p { margin: 0; }
 
 /* --- Review and pay: a checkout. Booking as a receipt (left), payment (right).
-   Neutral surfaces; Renn Bros red only for the top rule, icons and Pay. ------ */
+   Neutral surfaces; Renn Bros red only for the accent rule, icons and Pay. --- */
 .book__grid.is-checkout { grid-template-columns: minmax(0, 1fr); }
 .book__grid.is-checkout .summary { display: none; }
 .co__back { display: inline-flex; align-items: center; gap: 0.35rem; width: fit-content; margin: -0.5rem 0 0.25rem; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; font-size: 0.9375rem; color: var(--color-ink-2); }
 .co__grid { display: grid; border: 1px solid var(--color-rule); border-radius: var(--radius-lg); overflow: hidden; background: var(--color-card); box-shadow: 0 30px 60px -44px rgb(var(--shadow-rgb) / 0.5); }
 @media (min-width: 56em) { .co__grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); } }
-.co__booking { background: var(--color-mist); border-top: 3px solid var(--color-red); padding: clamp(1.25rem, 3vw, 2.25rem); min-width: 0; }
+.co__booking { background: var(--color-mist); padding: clamp(1.25rem, 3vw, 2.25rem); min-width: 0; }
 .co__pay { display: grid; gap: 1rem; align-content: start; padding: clamp(1.25rem, 3vw, 2.25rem); min-width: 0; }
-@media (min-width: 56em) { .co__pay { border-top: 3px solid transparent; } }
 .co__toggle { display: none; }
 .co__receipt { display: grid; gap: 1.25rem; }
 .co__brand .mark__imprint { display: block; }
+/* The brand accent: a short red rule above the lockup. */
+.co__brand::before { content: ""; display: block; width: 2.5rem; height: 3px; margin-bottom: 1rem; border-radius: 2px; background: var(--color-red); }
 .co__appt { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 0.75rem; padding: 1rem 1.1rem; border-radius: var(--radius-card); background: var(--color-card); border: 1px solid var(--color-rule); }
 .co__appt p { grid-column: 1; margin: 0; display: flex; gap: 0.55rem; align-items: flex-start; }
 .co__appt svg { flex: none; margin-top: 0.15em; color: var(--color-red); }
