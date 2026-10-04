@@ -179,13 +179,6 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <p className="err" data-err="phone">{b.invalid.phone}</p>
               <p className="err" data-err="email">{b.invalid.email}</p>
             </div>
-            <div className="grid3">
-              <label className="field"><span>{b.you.year} <em className="opt">({b.you.optional})</em></span><input className="input" name="year" inputMode="numeric" maxLength={4} /></label>
-              <label className="field"><span>{b.you.make}</span><input className="input" name="make" required /></label>
-              <label className="field"><span>{b.you.model}</span><input className="input" name="model" required /></label>
-              <p className="err" data-err="make">{b.invalid.make}</p>
-              <p className="err" data-err="model">{b.invalid.model}</p>
-            </div>
             <label className="field">
               <span>{b.you.vin} <em className="opt">({b.you.optional})</em></span>
               <input className="input" name="vin" maxLength={17} autoCapitalize="characters" spellCheck={false} />
@@ -198,6 +191,13 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 <input className="sr-only" type="file" accept="image/*" data-vin-photo />
               </label>
               <span className="help scan__status" data-vin-status aria-live="polite" />
+            </div>
+            <div className="grid3">
+              <label className="field"><span>{b.you.year} <em className="opt">({b.you.optional})</em></span><input className="input" name="year" inputMode="numeric" maxLength={4} /></label>
+              <label className="field"><span>{b.you.make}</span><input className="input" name="make" required /></label>
+              <label className="field"><span>{b.you.model}</span><input className="input" name="model" required /></label>
+              <p className="err" data-err="make">{b.invalid.make}</p>
+              <p className="err" data-err="model">{b.invalid.model}</p>
             </div>
             <label className="field">
               <span>{b.you.notes} <em className="opt">({b.you.optional})</em></span>

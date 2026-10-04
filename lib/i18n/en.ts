@@ -452,7 +452,7 @@ export const en = {
       make: "Make",
       model: "Model",
       vin: "VIN",
-      vinHelp: "Seventeen characters, on the driver's door frame or your insurance card.",
+      vinHelp: "Seventeen characters, on the driver's door frame or your insurance card. Add it first and we fill in the year, make and model.",
       vinScan: "Take or upload a photo of the VIN",
       vinReading: "Reading the VIN…",
       vinRead: (vin: string) => `Read ${vin}. Check it against your car.`,

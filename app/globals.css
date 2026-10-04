@@ -186,13 +186,11 @@ p { max-width: 62ch; }
 textarea.input { min-height: 7rem; resize: vertical; line-height: 1.5; }
 .help { font-size: 0.9375rem; color: var(--color-ink-3); }
 
-/* --- Reveal: visible by default; CSS scroll-driven where supported ---------------- */
-html.js [data-reveal] { opacity: 0; transform: translateY(20px); }
-html.js [data-reveal].in { opacity: 1; transform: none; transition: opacity 900ms var(--ease-out), transform 900ms var(--ease-out); }
-@supports (animation-timeline: view()) {
-  html.js [data-reveal] { opacity: 1; transform: none; animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
-}
-@keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+/* --- Reveal: each block fades in once as it first scrolls into view, then stays.
+   The "shown" mark is a data attribute, not a class: React rewrites the class
+   of a card when it changes (Add to visit), which used to blank the card. --- */
+html.js [data-reveal]:not([data-shown]) { opacity: 0; transform: translateY(20px); }
+html.js [data-reveal][data-shown] { opacity: 1; transform: none; transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
 
 /* --- Edge blur (progressive) --------------------------------------------------- */
 .edge-sentinel { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }

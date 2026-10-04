@@ -455,7 +455,7 @@ export const fr: Dict = {
       make: "Marque",
       model: "Modèle",
       vin: "NIV",
-      vinHelp: "Dix-sept caractères, sur le cadre de la portière du conducteur ou votre carte d’assurance.",
+      vinHelp: "Dix-sept caractères, sur le cadre de la portière du conducteur ou votre carte d’assurance. Entrez-le d’abord : nous remplissons l’année, la marque et le modèle.",
       vinScan: "Prendre ou téléverser une photo du NIV",
       vinReading: "Lecture du NIV…",
       vinRead: (vin: string) => `Lu : ${vin}. Comparez-le avec votre véhicule.`,
