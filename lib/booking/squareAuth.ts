@@ -56,6 +56,15 @@ async function tokenRequest(body: Record<string, string>): Promise<Saved> {
   return json as Saved;
 }
 
+/** The site's public address. Inside a Netlify function, request.url carries
+ *  the deploy's own address (<id>--rennbros.netlify.app), which wouldn't match
+ *  the Redirect URL set in Square; Netlify's URL variable is the main domain. */
+export function publicOrigin(request: Request): string {
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (host && !host.includes("--")) return `https://${host.replace(/^www\./, "")}`;
+  return env.URL ?? new URL(request.url).origin;
+}
+
 /** The authorize link the owner opens once. */
 export function authorizeUrl(state: string, redirectUri: string): string {
   const q = new URLSearchParams({ client_id: appId(), scope: BUYER_SCOPES.join(" "), session: "false", state, redirect_uri: redirectUri });

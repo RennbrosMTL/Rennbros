@@ -1,4 +1,4 @@
-import { connect } from "@/lib/booking/squareAuth";
+import { connect, publicOrigin } from "@/lib/booking/squareAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   if (url.searchParams.get("error")) return page("Not connected", "Square approval was cancelled. Nothing changed.", 400);
   if (!code || !expected || url.searchParams.get("state") !== expected) return page("Not connected", "This link expired. Open /api/square/connect again.", 400);
   try {
-    const r = await connect(code, `${url.origin}/api/square/oauth`);
+    const r = await connect(code, `${publicOrigin(request)}/api/square/oauth`);
     if (!r.ok) return page("Not connected", `${r.reason}. Nothing changed.`, 403);
     return page("Connected", "Website bookings now arrive in Square as requests. Square will notify you, and you accept or decline each one in the Square app. The customer gets Square's confirmation when you accept.");
   } catch (e) {

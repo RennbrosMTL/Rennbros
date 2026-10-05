@@ -1,4 +1,4 @@
-import { authorizeUrl, status } from "@/lib/booking/squareAuth";
+import { authorizeUrl, publicOrigin, status } from "@/lib/booking/squareAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     return new Response("Booking approval isn't set up yet: SQUARE_APP_SECRET is missing in Netlify.", { status: 503 });
   }
   const state = crypto.randomUUID();
-  const redirect = `${url.origin}/api/square/oauth`;
+  const redirect = `${publicOrigin(request)}/api/square/oauth`;
   return new Response(null, {
     status: 302,
     headers: {
