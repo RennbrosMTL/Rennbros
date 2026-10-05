@@ -604,9 +604,18 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const pct = business.booking.depositPercent;
   const depositNow = () => (pct ? depositCents(picked(), pct, rim(), runFlat()) : 0);
   const total = () => ({ amount: (depositNow() / 100).toFixed(2), label: b.confirm.card });
+  /** The booking terms must be accepted before any payment (card or wallet). */
+  const termsOk = () => {
+    const box = form.querySelector<HTMLInputElement>('[name="acceptTerms"]');
+    const ok = !box || box.checked;
+    $('[data-err="terms"]').classList.toggle("on", !ok);
+    if (!ok) box?.scrollIntoView({ block: "center" });
+    return ok;
+  };
   /** After a wallet tokenizes, send the booking with that token. */
   const payWith = async (w: Tokenizer) => {
     for (let n = 0; n < LAST; n++) if (!check(n)) return go(n);
+    if (!termsOk()) return;
     try {
       const tok = await w.tokenize();
       if (tok.status !== "OK" || !tok.token) return; // closed or cancelled the wallet sheet
@@ -774,6 +783,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   form.addEventListener("change", (e) => {
     const n = (e.target as HTMLInputElement).name;
     if (n === "notifyEmail" || n === "notifyText") $('[data-err="notify"]').classList.remove("on");
+    if (n === "acceptTerms") $('[data-err="terms"]').classList.remove("on");
   });
 
   // Phones: the receipt folds into one line above the payment panel.
@@ -798,6 +808,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       form.querySelector<HTMLElement>(".notify")?.scrollIntoView({ block: "center" });
       return;
     }
+    if (!termsOk()) return;
     alert.classList.remove("on");
     $('[data-err="taken"]').classList.remove("on");
     submit.setAttribute("aria-busy", "true");

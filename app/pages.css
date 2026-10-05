@@ -7,7 +7,7 @@
   .alert {
     display: none; gap: 1rem; align-items: start; margin-bottom: 2rem;
     padding: 1.5rem; border-radius: var(--radius-card); background: var(--color-red-wash); color: var(--color-red-ink);
-    border: 1px solid rgb(200 22 29 / 0.25);
+    border: 1px solid rgb(var(--accent-rgb) / 0.25);
   }
   .alert:target, .alert.on { display: flex; }
   .alert__t { font-weight: 500; }
@@ -519,3 +519,11 @@
 .notice__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; padding-top: 0.2rem; }
 .notice__actions .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 @media (max-width: 30em) { .notice__actions .btn { flex: 1 1 auto; justify-content: center; } }
+.doc__download { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; align-items: center; padding: 1rem 1.15rem; border: 1px solid var(--color-rule); border-radius: var(--radius-sm); background: var(--color-card); }
+.doc__download .link { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 500; }
+.doc__download .soft { color: var(--color-ink-3); font-weight: 400; }
+.price-notice { margin-top: 0.4rem; font-size: 0.86rem; line-height: 1.45; color: var(--color-ink-3); }
+.price-notice--co { margin: 0.2rem 0 0.6rem; }
+.co__accept { display: flex; gap: 0.6rem; align-items: flex-start; margin: 0.2rem 0 0.7rem; font-size: 0.9rem; line-height: 1.45; color: var(--color-ink-2); cursor: pointer; }
+.co__accept input { width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; flex: none; accent-color: var(--color-red); }
+.co__accept .soft { color: var(--color-ink-3); }

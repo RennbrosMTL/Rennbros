@@ -97,6 +97,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
               ))}
             </div>
             <p className="total" data-total aria-live="polite" />
+            <p className="price-notice">{b.confirm.priceNotice}</p>
             <p className="err" data-err="service">{b.invalid.service}</p>
           </fieldset>
 
@@ -328,6 +329,15 @@ export function BookingForm({ lang }: { lang: Lang }) {
                   <div id="card-field" className="card__field" />
                   <p className="co__accepted">{b.confirm.cardAccepted}</p>
                 </div>
+                <p className="price-notice price-notice--co">{b.confirm.priceNotice}</p>
+                <label className="co__accept">
+                  <input type="checkbox" name="acceptTerms" required />
+                  <span>
+                    {b.confirm.acceptPre} <a className="link" href={href(lang, "/legal/terms")} target="_blank">{b.confirm.acceptTerms}</a> {b.confirm.acceptAnd} <a className="link" href={href(lang, "/legal/warranty")} target="_blank">{b.confirm.acceptWarranty}</a>.{" "}
+                    <a className="link soft" href={lang === "en" ? "/docs/renn-bros-terms-fr.pdf" : "/docs/renn-bros-terms.pdf"} target="_blank" lang={lang === "en" ? "fr" : "en"}>{b.confirm.acceptFr}</a>
+                  </span>
+                </label>
+                <p className="err" data-err="terms" role="alert">{b.invalid.terms}</p>
                 <button className="btn btn--red co__submit" type="submit" data-submit>{b.confirm.submit}</button>
                 <p className="co__secure">
                   <LockSimple size={15} weight="bold" aria-hidden />

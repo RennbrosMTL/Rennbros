@@ -49,6 +49,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
             <li><a className="link" href={href(lang, "/legal/warranty")}>{t.footer.warranty}</a></li>
             <li><a className="link" href={href(lang, "/legal/terms")}>{t.footer.terms}</a></li>
             <li><a className="link" href={href(lang, "/legal/privacy")}>{t.footer.privacy}</a></li>
+            <li><a className="link" href={href(lang, "/legal/disclosures")}>{t.footer.disclosures}</a></li>
           </ul>
         </nav>
 
@@ -63,6 +64,12 @@ export function SiteFooter({ lang }: { lang: Lang }) {
       </div>
       <div className="page foot__base">
         <p>© {new Date().getFullYear()} {business.name}</p>
+        <p className="foot__square">
+          {t.footer.squareLabel}{" "}
+          {t.pages.square.links.map(([, url], i) => (
+            <span key={url}>{i > 0 && " · "}<a className="link" href={url} target="_blank" rel="noopener noreferrer">{[t.footer.squarePrivacy, t.footer.squareTerms, t.footer.squarePayment][i]}</a></span>
+          ))}
+        </p>
       </div>
     </footer>
   );

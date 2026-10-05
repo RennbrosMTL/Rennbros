@@ -57,6 +57,9 @@ export async function POST(request: Request) {
   // (they have, or will get, the property's permission).
   const office = (["en", "fr"] as const).some((l) => dict(l).book.where.parkingOptions.at(-1) === s("parking"));
   if (office && !s("parkingConsent").startsWith("accepted")) return fail(request, lang, "parking_consent", 400, isJSON);
+  // The booking terms are accepted before any payment (Consumer Protection Act, s. 54.5).
+  const termsAccepted = data.acceptTerms === true || data.acceptTerms === "on" || data.acceptTerms === "true";
+  if (!termsAccepted) return fail(request, lang, "terms", 400, isJSON);
   const minutes = timing.total(slugs);
 
   let slot: Slot | null = null;
@@ -98,6 +101,7 @@ export async function POST(request: Request) {
     `Parking: ${s("parking")}`,
     office && `Office/business lot: customer confirmed they have, or will get, the property's permission (consent and disclosure ${s("parkingConsent").slice(9) || "accepted"}).`,
     `Contact: ${s("phone")} · ${s("email")}`,
+    `Accepted booking terms v1.0 and warranty (${lang === "fr" ? "French" : "English"} version) at ${new Date().toISOString()}`,
     `Updates by: ${notify.email && notify.text ? "email and text" : notify.email ? "email only (no texts)" : "text only (no emails)"}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
     s("vin") && `VIN: ${s("vin")}`,

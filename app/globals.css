@@ -28,6 +28,7 @@
   --color-ok: #2c6a3d;
   --color-ok-wash: #e8f3eb;
   --color-on-red: #ffffff;
+  --accent-rgb: 200 22 29;
 
   --font-display: var(--font-clash), var(--font-general), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-sans: var(--font-general), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -68,10 +69,14 @@
   --color-ink-4: #5b6068;
   --color-rule: #2a2d33;
   --color-rule-2: #393d44;
-  --color-red: #c8161d;
-  --color-red-2: #de2a31;
-  --color-red-ink: #ff8a8e;
-  --color-red-wash: #2d1618;
+  /* Dark mode takes the business card's yellow as its accent (owners' choice,
+     2026-10-05); "red" here is the accent's role, not its hue. */
+  --color-red: #e8cc00;
+  --color-red-2: #f5dc1f;
+  --color-red-ink: #f2d83a;
+  --color-red-wash: #29260f;
+  --color-on-red: #141417;
+  --accent-rgb: 232 204 0;
   --color-silver: #4a4f57;
   --color-silver-deep: #a9aeb6;
   --color-ok: #86c99a;
@@ -159,7 +164,7 @@ p { max-width: 62ch; }
   transition: background-color 180ms var(--ease-soft), border-color 180ms var(--ease-soft), color 180ms var(--ease-soft), transform 180ms var(--ease-out), box-shadow 320ms var(--ease-out);
 }
 .btn:active { transform: translateY(1px) scale(0.985); }
-.btn--red { background: var(--color-red); color: var(--color-on-red); box-shadow: 0 10px 24px -12px rgb(200 22 29 / 0.6); }
+.btn--red { background: var(--color-red); color: var(--color-on-red); box-shadow: 0 10px 24px -12px rgb(var(--accent-rgb) / 0.6); }
 .btn--red:hover { background: var(--color-red-2); }
 .btn--ghost { background: var(--color-card); color: var(--color-ink); border-color: var(--color-rule-2); }
 .btn--ghost:hover { border-color: var(--color-ink); }
@@ -182,7 +187,7 @@ p { max-width: 62ch; }
   transition: border-color 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft);
 }
 .input:hover { border-color: var(--color-ink-4); }
-.input:focus { outline: none; border-color: var(--color-ink); box-shadow: 0 0 0 4px rgb(200 22 29 / 0.16); }
+.input:focus { outline: none; border-color: var(--color-ink); box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 0.16); }
 textarea.input { min-height: 7rem; resize: vertical; line-height: 1.5; }
 .help { font-size: 0.9375rem; color: var(--color-ink-3); }
 

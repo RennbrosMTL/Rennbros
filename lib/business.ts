@@ -56,12 +56,13 @@ export const business = {
   },
 
   booking: {
-    /** Start times, every hour from 8 am to 5 pm, Montréal time. */
-    arrivals: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-    /** Every service, alone or combined, can start as late as 5 pm; the work
-     *  may run into the evening, up to this hour. Square's hours (business and
-     *  team member) decide what's actually free. */
-    finishBy: 22,
+    /** Start times, on the hour, Montréal time (owners' rule 2026-10-05:
+     *  any start, as long as the visit is finished by 5 pm). */
+    arrivals: [8, 9, 10, 11, 12, 13, 14, 15, 16],
+    /** Every visit must be finished by this hour; a start is offered only if
+     *  the whole visit fits. Square's hours (business and team member) should
+     *  be 8:00–17:00 to match. */
+    finishBy: 17,
     /** Travel and prep kept free after every visit (not shown to customers). */
     bufferMinutes: 30,
     leadTimeHours: 24,

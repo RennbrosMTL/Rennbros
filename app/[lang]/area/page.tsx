@@ -41,6 +41,10 @@ export default async function Area({ params }: { params: Promise<{ lang: string 
             <p>{t.business.weekdays}<br />{t.business.weekends}</p>
             <p className="soft">{t.business.afterHours}</p>
           </div>
+          <div className="area__block area__outside">
+            <p className="label">{p.outsideTitle}</p>
+            <p>{p.outside}</p>
+          </div>
           <div className="area__block">
             <p className="label">{p.contact}</p>
             <ul className="contact">

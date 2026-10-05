@@ -83,6 +83,8 @@ for (const lang of ["en", "fr"]) {
   await p.type('input[name="postal"]', "H9W 5L6");
   await p.click('label.pill:has(input[name="parking"]) span');
   await tap(p, "[data-next]");
+  // Continue on the address step first settles the area check (a lookup).
+  await p.waitForFunction(() => !document.querySelector('[data-step="2"]').hidden, { timeout: 10000 }).catch(() => {});
   ok(await visible(p, '[data-step="2"]'), `${lang}: step 3 shown`, await p.evaluate(() => JSON.stringify({ errs: [...document.querySelectorAll(".err.on")].map((e) => e.dataset.err), parking: document.querySelector("form").elements.namedItem("parking").value, addr: document.querySelector('[name="address"]').value, steps: [...document.querySelectorAll("[data-step]")].map((s) => s.hidden) })));
   await p.waitForSelector(".win", { timeout: 15000 });
   const days = await p.$$eval(".cal__day:not(:disabled)", (els) => els.length);
@@ -134,6 +136,10 @@ for (const lang of ["en", "fr"]) {
   const review = await p.$$eval("[data-review-v]", (els) => els.map((e) => e.textContent.trim()));
   ok(review.every(Boolean), `${lang}: review filled`, review[2]);
 
+  // The booking terms must be accepted first.
+  await p.click("[data-submit]");
+  ok(await visible(p, '[data-err="terms"].on'), `${lang}: terms acceptance required`);
+  await p.click('input[name="acceptTerms"]');
   await Promise.all([p.waitForNavigation({ waitUntil: "networkidle2" }), p.click("[data-submit]")]);
   const url = new URL(p.url());
   ok(url.pathname.replace(/\/$/, "") === `${pre}/book/received` && /^DEMO-/.test(url.searchParams.get("ref") ?? ""), `${lang}: lands on confirmation`, url.pathname + url.search);
@@ -184,6 +190,7 @@ for (const lang of ["en", "fr"]) {
   await p.$eval('input[name="date"]', (el, v) => (el.value = v), ymd);
   await p.click('label.pill:has(input[value="14"]) span');
   for (const [k, v] of Object.entries({ name: "Plain Person", phone: "5145550100", email: "plain@example.com", make: "Wagon", model: "Estate" })) await p.type(`[name="${k}"]`, v);
+  await p.click('input[name="acceptTerms"]');
   await Promise.all([p.waitForNavigation({ waitUntil: "networkidle2" }), p.click("[data-submit]")]);
   const url = new URL(p.url());
   ok(url.pathname.replace(/\/$/, "") === "/book/received", "no-JS: accepted request lands on confirmation", url.pathname + url.search);
@@ -208,18 +215,18 @@ for (const lang of ["en", "fr"]) {
   const soon = await fetch(`${BASE}/api/book`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ lang: "en", service: "brakes", address: "x", postal: "H9W 5L6", parking: "Driveway", name: "A", phone: "5145550100", email: "a@b.co", make: "a", model: "b", startAt: new Date(Date.now() + 3600000).toISOString() }),
+    body: JSON.stringify({ lang: "en", service: "brakes", address: "x", postal: "H9W 5L6", parking: "Driveway", name: "A", phone: "5145550100", email: "a@b.co", make: "a", model: "b", acceptTerms: "on", startAt: new Date(Date.now() + 3600000).toISOString() }),
   });
   ok(soon.status === 400 && (await soon.json()).error === "lead_time", "API: a start inside the lead time is refused");
 
-  // Combined visits: hourly starts 8 am to 5 pm, whatever the length.
+  // Every visit is finished by 5 pm: long visits start earlier.
   const combo = await (await fetch(`${BASE}/api/availability?services=brakes,tire-install,oil-change&days=14`)).json();
   const hours = combo.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt))));
   ok(combo.slots.length > 0 && combo.slots.every((x) => x.minutes === 270), "API: three services take 4 h 30 in total", `${combo.slots.length} windows`);
-  ok(hours.every((h) => h >= 8 && h <= 17) && hours.includes(17), "API: 4 h 30 visits start any hour 8 am to 5 pm", [...new Set(hours)].join(","));
+  ok(hours.every((h) => h >= 8 && h <= 12) && hours.includes(12), "API: 4 h 30 visits start 8 am to noon, done by 5 pm", [...new Set(hours)].join(","));
   const single = await (await fetch(`${BASE}/api/availability?services=oil-change&days=14`)).json();
   const hs = new Set(single.slots.map((x) => Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Toronto", hour: "numeric", hourCycle: "h23" }).format(new Date(x.startAt)))));
-  ok([...hs].every((h) => h >= 8 && h <= 17) && hs.has(17) && !hs.has(18), "API: a 1 h visit can start any hour 8 am to 5 pm, never 6 pm", [...hs].sort((a, b) => a - b).join(","));
+  ok([...hs].every((h) => h >= 8 && h <= 16) && hs.has(16) && !hs.has(17), "API: a 1 h visit can start any hour 8 am to 4 pm, done by 5 pm", [...hs].sort((a, b) => a - b).join(","));
 
   const unknown = await fetch(`${BASE}/api/availability?service=suspension`);
   ok(unknown.status === 400, "API: unknown service refused by availability");

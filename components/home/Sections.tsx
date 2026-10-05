@@ -57,12 +57,13 @@ export function Area({ lang }: { lang: Lang }) {
         <h2 className="d2" id="area-title">{a.title}</h2>
         <p className="lead">{a.lead}</p>
         <div className="area__block">
-          <p className="label">{a.towns}</p>
+          <p className="label">{a.regionsLabel}</p>
           <ul className="chips">
-            {business.area.towns.filter((n) => !(business.area.homeHidden as readonly string[]).includes(n)).map((n) => (
-              <li key={n}><button type="button" className="chip" data-town={n} aria-pressed="false" disabled>{town(lang, n)}</button></li>
+            {a.regions.map((r) => (
+              <li key={r}><span className="chip chip--static">{r}</span></li>
             ))}
           </ul>
+          <a className="link" href={href(lang, "/area")}>{t.pages.area.title.replace(/\.$/, "")} →</a>
         </div>
         <div className="area__block">
           <p className="label">{a.hours}</p>

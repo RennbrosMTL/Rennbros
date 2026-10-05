@@ -6,7 +6,7 @@ import { href } from "@/lib/i18n";
 /** Every public page in both languages, each listing its counterpart. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const site = `https://${business.domain.toLowerCase()}`;
-  const paths = ["/", "/services", ...services.map((s) => `/services/${s.slug}`), "/how-it-works", "/area", "/faq", "/book", "/legal/privacy", "/legal/warranty", "/legal/terms"];
+  const paths = ["/", "/services", ...services.map((s) => `/services/${s.slug}`), "/how-it-works", "/area", "/faq", "/book", "/legal/privacy", "/legal/warranty", "/legal/terms", "/legal/disclosures"];
   return paths.flatMap((p) =>
     (["en", "fr"] as const).map((lang) => ({
       url: site + href(lang, p),
