@@ -7,6 +7,14 @@
 
 export const business = {
   name: "Renn Bros",
+  /** The enterprise behind the trade name, as registered (Registraire des
+   *  entreprises). Published on the Disclosures page and in the legal PDFs
+   *  (Consumer Protection Act s. 54.4: name and address before a distance contract). */
+  legal: {
+    name: "9572-4878 Québec inc.",
+    neq: "1182387598",
+    address: { en: "21 Avenue 101E, Notre-Dame-de-l'Île-Perrot, QC J7W 0L4", fr: "21, 101e Avenue, Notre-Dame-de-l’Île-Perrot (Québec) J7W 0L4" },
+  },
   tagline: "Pneu et Mécanique",
 
   /** Confirmed by Tashii, 2026-09-27. */
