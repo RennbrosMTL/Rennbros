@@ -118,13 +118,53 @@ export function BookingForm({ lang }: { lang: Lang }) {
             <div className="field">
               <span id="parking-label">{b.where.parking}</span>
               <div className="pills" role="radiogroup" aria-labelledby="parking-label">
-                {b.where.parkingOptions.map((o) => (
-                  <label key={o} className="pill"><input type="radio" name="parking" value={o} required /><span>{o}</span></label>
+                {b.where.parkingOptions.map((o, i) => (
+                  <label key={o} className="pill"><input type="radio" name="parking" value={o} required data-office={i === b.where.parkingOptions.length - 1 ? "" : undefined} /><span>{o}</span></label>
                 ))}
               </div>
               <span className="help">{b.where.parkingHelp}</span>
             </div>
+            <input type="hidden" name="parkingConsent" value="" />
             <p className="err" data-err="parking">{b.invalid.parking}</p>
+            <p className="err" data-err="parkingConsent" role="alert">{b.office.blocked}</p>
+            <p className="err" data-err="outside" role="alert">
+              {b.outside.blocked} <a className="link num" href={`tel:${business.phone.tel}`}>{business.phone.display}</a>
+            </p>
+
+            {/* Office or business lot: the customer confirms the property's permission. */}
+            <dialog className="notice" data-office-dialog aria-labelledby="office-title">
+              <div className="notice__head">
+                <WarningCircle size={22} weight="fill" aria-hidden />
+                <h3 className="notice__title" id="office-title">{b.office.title}</h3>
+                <button type="button" className="notice__x" data-office-close aria-label={b.office.close}>×</button>
+              </div>
+              <p>{b.office.body}</p>
+              <ul className="notice__points">
+                {b.office.points.map((pt) => <li key={pt}>{pt}</li>)}
+              </ul>
+              <p><a className="link" href={t.pages.officeDoc.href} target="_blank" rel="noopener" download>{b.office.doc}</a></p>
+              <label className="notice__agree"><input type="checkbox" data-office-agree /><span>{b.office.agree}</span></label>
+              <div className="notice__actions">
+                <button type="button" className="btn btn--ghost" data-office-close>{b.office.close}</button>
+                <button type="button" className="btn btn--red" data-office-accept disabled>{b.office.accept}</button>
+              </div>
+            </dialog>
+
+            {/* Outside the area: book by phone instead. */}
+            <dialog className="notice" data-outside-dialog aria-labelledby="outside-title">
+              <div className="notice__head">
+                <MapPin size={22} weight="fill" aria-hidden />
+                <h3 className="notice__title" id="outside-title">{b.outside.title}</h3>
+                <button type="button" className="notice__x" data-outside-close aria-label={b.office.close}>×</button>
+              </div>
+              <p>{b.outside.body}</p>
+              <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+              <div className="notice__actions">
+                <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={16} weight="bold" aria-hidden />{b.outside.text}</a>
+                <a className="btn btn--ghost" href={`tel:${business.phone.tel}`}>{b.outside.call}</a>
+                <button type="button" className="btn btn--red" data-outside-close data-outside-change>{b.outside.change}</button>
+              </div>
+            </dialog>
           </fieldset>
 
           {/* 3 · When */}
@@ -261,6 +301,8 @@ export function BookingForm({ lang }: { lang: Lang }) {
                   </fieldset>
                   <dl className="co__totals">
                     <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
+                    <div><dt>{b.confirm.payTax}</dt><dd className="num" data-pay-tax /></div>
+                    <div><dt>{b.confirm.payWithTax}</dt><dd className="num" data-pay-with-tax /></div>
                     {business.booking.depositPercent ? (
                       <>
                         <div className="co__due"><dt>{b.confirm.payTitle}</dt><dd className="num" data-pay-deposit /></div>

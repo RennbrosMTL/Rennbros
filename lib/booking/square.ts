@@ -127,6 +127,12 @@ export type SquareEnv = {
   serviceVariations: Record<string, string>;
   /** The short service used to map free time (default: the shortest mapped). */
   probeService?: string;
+  /** A customer-level ("buyer-level") token for creating bookings. With it,
+   *  Square treats a website booking as a customer's request: it arrives as
+   *  PENDING, the owner is notified and accepts or declines it in Square.
+   *  Without it, bookings are made with accessToken (the owner's own) and are
+   *  accepted at once. See lib/booking/squareAuth.ts. */
+  bookingToken?: () => Promise<string | undefined>;
 };
 
 /* ------------------------------------------------------------------------ */
@@ -188,11 +194,11 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
   const base =
     env.environment === "production" ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
 
-  const call = async <T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> => {
+  const call = async <T>(path: string, init: { method?: string; body?: unknown; token?: string } = {}): Promise<T> => {
     const res = await fetch(base + path, {
       method: init.method ?? (init.body ? "POST" : "GET"),
       headers: {
-        Authorization: `Bearer ${env.accessToken}`,
+        Authorization: `Bearer ${init.token ?? env.accessToken}`,
         "Square-Version": SQUARE_VERSION,
         "Content-Type": "application/json",
       },
@@ -320,8 +326,12 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       const buffered = segments.map((x, i) => (i === segments.length - 1 ? { ...x, duration_minutes: x.duration_minutes + buffer } : x));
       const key = input.idempotencyKey ?? uuid();
       let withBuffer = buffer > 0;
+      // The customer-level token makes it a request the owner accepts in Square.
+      const token = await env.bookingToken?.().catch(() => undefined);
+      if (env.bookingToken && !token) console.warn("[book] no customer-level Square token; booking as the owner (accepted at once)");
       const create = (where: object, retry = false) =>
         call<{ booking: { id: string; status: string } }>("/v2/bookings", {
+          token,
           body: {
             idempotency_key: `${key}${retry ? "-n" : ""}${withBuffer ? "" : "-p"}`,
             booking: {

@@ -1,11 +1,11 @@
 import { provider, earliest, timing, schedule, pickServices } from "@/lib/booking/config";
 import { toSquareAddress } from "@/lib/booking/address";
-import { depositCents, estimateOf } from "@/lib/booking/deposit";
+import { depositCents, estimateOf, estimateWithTax } from "@/lib/booking/deposit";
 import { checkout, DepositDeclined } from "@/lib/booking/checkout";
 import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
 import { isRim } from "@/lib/services";
 import { business } from "@/lib/business";
-import { href, type Lang } from "@/lib/i18n";
+import { dict, href, type Lang } from "@/lib/i18n";
 import { TIME_ZONE, SquareError, fits, type Slot, type Segment } from "@/lib/booking/square";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +53,10 @@ export async function POST(request: Request) {
   const missing = ["address", "postal", "parking", "name", "phone", "email", "make", "model"].filter((k) => !s(k));
   if (!slugs || missing.length) return fail(request, lang, "missing_fields", 400, isJSON, { missing });
   if (!/^\S+@\S+\.\S+$/.test(s("email"))) return fail(request, lang, "email", 400, isJSON);
+  // Office or business lot: only with the customer's consent to the disclosure
+  // (they have, or will get, the property's permission).
+  const office = (["en", "fr"] as const).some((l) => dict(l).book.where.parkingOptions.at(-1) === s("parking"));
+  if (office && !s("parkingConsent").startsWith("accepted")) return fail(request, lang, "parking_consent", 400, isJSON);
   const minutes = timing.total(slugs);
 
   let slot: Slot | null = null;
@@ -92,6 +96,7 @@ export async function POST(request: Request) {
     slugs.includes("tire-install") && `Tires to mount and balance: rim ${rim ? `${rim}"` : "size not given"}${runFlat ? ", run-flat (+$20)" : ""}`,
     `Address: ${[s("address"), s("postal").toUpperCase()].filter(Boolean).join(", ")}`,
     `Parking: ${s("parking")}`,
+    office && `Office/business lot: customer confirmed they have, or will get, the property's permission (consent and disclosure ${s("parkingConsent").slice(9) || "accepted"}).`,
     `Contact: ${s("phone")} · ${s("email")}`,
     `Updates by: ${notify.email && notify.text ? "email and text" : notify.email ? "email only (no texts)" : "text only (no emails)"}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
@@ -120,7 +125,7 @@ export async function POST(request: Request) {
         customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone"), notify },
         address: s("address"),
         place: toSquareAddress(s("address"), s("postal")),
-        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · deposit ${pct}%` : note,
+        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · with GST and QST: $${estimateWithTax(slugs, rim, runFlat).toFixed(2)} · deposit ${pct}% of that` : note,
         lang,
       },
       amountCents > 0

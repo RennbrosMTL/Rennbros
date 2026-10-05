@@ -9,7 +9,7 @@ import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
 import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
 import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
-import { depositCents, estimateOf } from "@/lib/booking/deposit";
+import { depositCents, estimateOf, taxesOn } from "@/lib/booking/deposit";
 import { cleanVin, decodeVin, isValidVin, readVin } from "@/lib/book/vin";
 import { MAX_PHOTOS } from "@/lib/booking/photos";
 
@@ -94,7 +94,13 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   // --- Validation, one step at a time ------------------------------------
   const rules: Record<number, [string, (v: string) => boolean][]> = {
     0: [["service", () => picked().length > 0], ["rim", () => !picked().includes("tire-install") || !!rim()]],
-    1: [["address", (v) => v.length > 4], ["postal", (v) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim())], ["parking", (v) => !!v]],
+    1: [
+      ["address", (v) => v.length > 4],
+      ["postal", (v) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim())],
+      ["parking", (v) => !!v],
+      ["parkingConsent", () => !atOffice() || !!value("parkingConsent")],
+      ["outside", () => areaState !== "out"],
+    ],
     2: [["slot", () => !!value("startAt")]],
     3: [
       ["name", (v) => v.length > 1],
@@ -128,7 +134,18 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     }
   });
 
-  next.addEventListener("click", () => check(at) && go(at + 1));
+  next.addEventListener("click", async () => {
+    // The address step: always settle the area check first (a fresh lookup,
+    // replacing any one still waiting on the typing pause).
+    if (at === 1 && address.value.trim().length >= 6) {
+      clearTimeout(pause);
+      if (address.value.trim() !== checkedFor || areaState === "") await coverCheck();
+    }
+    if (check(at)) return go(at + 1);
+    if (at !== 1) return;
+    if (areaState === "out") return outsideDialog?.showModal();
+    if (atOffice() && !value("parkingConsent")) openOffice(true);
+  });
   back.addEventListener("click", () => go(at - 1));
   $$<HTMLButtonElement>("[data-goto]").forEach((btn) => btn.addEventListener("click", () => go(Number(btn.dataset.goto))));
   // Enter in a text field moves forward instead of submitting half a form.
@@ -214,6 +231,9 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const setField = (name: string, v: string) => {
     const f = field(name);
     if (!f || !v) return;
+    // Parking saved before 2026-10 had 4 positions (Driveway, Garage, Street,
+    // Office); now there are 3. "v2:" marks the new positions.
+    if (name === "parking") v = v.startsWith("v2:") ? v.slice(3) : ({ "0": "0", "1": "1", "3": "2" } as Record<string, string>)[v] ?? "";
     if (f instanceof RadioNodeList) {
       const r = f[Number(v)] as HTMLInputElement | undefined;
       if (/^\d+$/.test(v) && r) r.checked = true;
@@ -221,7 +241,11 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   };
   const stored = (name: string) => {
     const f = field(name);
-    return f instanceof RadioNodeList ? String([...f].findIndex((r) => (r as HTMLInputElement).checked)).replace("-1", "") : value(name);
+    if (f instanceof RadioNodeList) {
+      const i = String([...f].findIndex((r) => (r as HTMLInputElement).checked)).replace("-1", "");
+      return name === "parking" && i ? `v2:${i}` : i;
+    }
+    return value(name);
   };
   try {
     const saved = JSON.parse(localStorage.getItem(REMEMBER_KEY) ?? "null") as Record<string, string> | null;
@@ -253,9 +277,14 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   } catch {}
   const cover = $("[data-cover]");
   let lookup = 0;
+  // "out" blocks the next step (book by phone instead); unknown never blocks.
+  let areaState: "in" | "out" | "" = "";
+  let checkedFor = "";
   const coverCheck = async () => {
     const q = address.value.trim();
     const mine = ++lookup;
+    areaState = "";
+    checkedFor = q;
     if (q.length < 6) return (cover.textContent = "");
     cover.dataset.state = "checking";
     cover.textContent = b.coverage.checking;
@@ -264,6 +293,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       if (mine !== lookup) return;
       if (!hit) return (cover.textContent = "");
       const inside = covered(hit.at);
+      areaState = inside ? "in" : "out";
+      if (inside) $('[data-err="outside"]').classList.remove("on");
       cover.dataset.state = inside ? "in" : "out";
       cover.textContent = inside ? b.coverage.in : b.coverage.out;
     } catch {
@@ -272,10 +303,61 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   };
   let pause = 0;
   address.addEventListener("input", () => {
+    resetConsent();
     clearTimeout(pause);
     pause = window.setTimeout(coverCheck, 900);
   });
   if (address.value) coverCheck();
+
+  // --- Office or business parking: the property's permission ---------------
+  const consentField = form.querySelector<HTMLInputElement>('[name="parkingConsent"]')!;
+  const officeDialog = form.querySelector<HTMLDialogElement>("[data-office-dialog]");
+  const outsideDialog = form.querySelector<HTMLDialogElement>("[data-outside-dialog]");
+  const agree = form.querySelector<HTMLInputElement>("[data-office-agree]");
+  const accept = form.querySelector<HTMLButtonElement>("[data-office-accept]");
+  const atOffice = () => !!form.querySelector<HTMLInputElement>('input[name="parking"][data-office]:checked');
+  let goOnAccept = false;
+  function resetConsent() {
+    consentField.value = "";
+    if (agree) agree.checked = false;
+    if (accept) accept.disabled = true;
+  }
+  const openOffice = (thenNext: boolean) => {
+    if (!officeDialog || officeDialog.open) return;
+    goOnAccept = thenNext;
+    if (agree) agree.checked = false;
+    if (accept) accept.disabled = true;
+    officeDialog.showModal();
+  };
+  agree?.addEventListener("change", () => { if (accept) accept.disabled = !agree.checked; });
+  accept?.addEventListener("click", () => {
+    if (!agree?.checked) return;
+    consentField.value = `accepted ${new Date().toISOString()}`;
+    $('[data-err="parkingConsent"]').classList.remove("on");
+    officeDialog?.close();
+    if (goOnAccept) next.click();
+  });
+  // Closed without agreeing (button, x or Escape): stay on this step.
+  const dismissOffice = () => {
+    officeDialog?.close();
+    if (atOffice() && !consentField.value) $('[data-err="parkingConsent"]').classList.add("on");
+  };
+  $$<HTMLButtonElement>("[data-office-close]").forEach((x) => x.addEventListener("click", dismissOffice));
+  officeDialog?.addEventListener("cancel", (e) => {
+    e.preventDefault();
+    dismissOffice();
+  });
+  form.querySelectorAll<HTMLInputElement>('input[name="parking"]').forEach((r) =>
+    r.addEventListener("change", () => {
+      $('[data-err="parkingConsent"]').classList.remove("on");
+      if (r.checked && r.hasAttribute("data-office") && !consentField.value) openOffice(false);
+    }),
+  );
+  $$<HTMLButtonElement>("[data-outside-close]").forEach((x) => x.addEventListener("click", () => outsideDialog?.close()));
+  form.querySelector("[data-outside-change]")?.addEventListener("click", () => {
+    address.focus();
+    address.select();
+  });
 
   // --- When: live availability -------------------------------------------
   const status = $("[data-when-status]");
@@ -485,7 +567,11 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       $("[data-pay-amount]").textContent = due;
       $("[data-pay-deposit]").textContent = due;
       $("[data-co-due-mini]").textContent = b.confirm.dueMini(due);
-      $("[data-pay-estimate]").textContent = money(cfg.lang, estimateOf(picked(), rim(), runFlat()), true);
+      const pre = estimateOf(picked(), rim(), runFlat());
+      const tx = taxesOn(pre);
+      $("[data-pay-estimate]").textContent = money(cfg.lang, pre, true);
+      $("[data-pay-tax]").textContent = money(cfg.lang, tx.gst + tx.qst, true);
+      $("[data-pay-with-tax]").textContent = money(cfg.lang, tx.total, true);
       // The button says what happens: pay, then send.
       if (cfg.square.appId && cents > 0) submit.textContent = b.confirm.payAndSend(due);
     }

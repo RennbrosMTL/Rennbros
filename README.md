@@ -138,14 +138,22 @@ priced by rim size, run-flat +$20). The two are either/or everywhere.
    offer windows that leave time to finish.
 2. `GET /api/availability` asks Square for open windows; `POST /api/book`
    creates the booking in Square (rim size, notes, photo links and VIN in the
-   booking note) with a **20% deposit**: the card is held, the booking is
+   booking note) with a **20% deposit on the estimate with GST and QST**: the card is held, the booking is
    created, then the hold is captured (`lib/booking/checkout.ts`). A failed
    booking releases the hold; retries reuse the same idempotency keys, so a
    customer is never charged twice. `npm run test:deposit` runs 25 scenarios.
    Customers can attach up to 4 photos (Netlify Blobs, deleted after 12
    months) and read their VIN from a photo (barcode or OCR, check-digit
    verified, decoded with NHTSA vPIC).
-3. The customer sees a confirmation; the business confirms the visit in Square.
+3. The customer sees "request received"; the business accepts or declines the
+   request in Square (see *Booking approval* below).
+
+The address step blocks addresses outside the service area (the customer is
+asked to call or text instead) and, for **Office parking**, asks the customer
+to accept a consent and disclosure (property permission) before continuing;
+the server refuses an office booking without it, and the acceptance time goes
+in the booking note. The PDF lives in `public/docs/` (source:
+`Onboarding/handoff/office-consent*.html`).
 
 All of this switches on from settings alone. In **Netlify → Project
 configuration → Environment variables** (the full list, with where each value
@@ -163,6 +171,7 @@ comes from, is in `.env.example`):
 | `NEXT_PUBLIC_SQUARE_ENVIRONMENT` | no | `production` |
 | `GOOGLE_PLACES_API_KEY` | **yes** | Places API (New) key, restricted to that API |
 | `GOOGLE_PLACE_ID` | no | the Google Business Profile's Place ID |
+| `SQUARE_APP_SECRET` | **yes** | the app's production Application secret (OAuth tab); turns on booking approval |
 | `HERO_SEASON_OVERRIDE` | no | pin one hero: `winter`, `spring`, `summer` or `fall` (leave unset for the automatic switch) |
 
 `NEXT_PUBLIC_*` settings are read when the site is built: **redeploy** after
@@ -171,6 +180,28 @@ changing them. The deposit percentage is `booking.depositPercent` in
 
 The access token opens the Square account, payments included. It only ever
 lives in Netlify's settings: never in the code, a commit, a chat or an email.
+
+### Booking approval
+
+Bookings created with the owner's access token count as the owner booking
+himself: Square accepts them at once and sends no alert. With a customer-level
+("buyer-level") token, the same booking arrives as a **request** (`PENDING`),
+Square notifies the owner, and he accepts or declines it in the Square app;
+the customer's confirmation goes out on acceptance. Square's online booking
+setting must stay on *accept bookings manually*. One-time setup:
+
+1. Square Developer → the app → **OAuth** (Production): Redirect URL
+   `https://rennbros.com/api/square/oauth`; copy the **Application secret**.
+2. Netlify: add `SQUARE_APP_SECRET` (secret), then redeploy.
+3. Signed in to the Renn Bros Square account, open
+   `https://rennbros.com/api/square/connect` and approve.
+   `https://rennbros.com/api/square/connect?status` shows whether it's connected.
+
+The token is kept in Netlify Blobs (`square-auth`) and refreshed automatically;
+only the Renn Bros account can be connected (`lib/booking/squareAuth.ts`).
+Until it's connected, bookings keep working as before (accepted at once). The
+deposit is charged when the request is sent; if the owner declines, he refunds
+it from the payment in Square.
 
 ---
 

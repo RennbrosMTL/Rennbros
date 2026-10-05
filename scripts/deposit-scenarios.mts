@@ -71,21 +71,22 @@ const ok = (cond: boolean, name: string, info = "") => {
   console.log(`${cond ? "PASS" : "FAIL"}  ${name}${info ? `  (${info})` : ""}`);
 };
 
-// --- Amounts: 20% of the estimate shown -------------------------------------
+// --- Amounts: 20% of the estimate with GST (5%) and QST (9.975%) -----------
+// e.g. $125: + $6.25 GST + $12.47 QST = $143.72; 20% = $28.74.
 const table: [string[], string | undefined, boolean, number][] = [
-  [["oil-change"], undefined, false, 2500],
-  [["brakes"], undefined, false, 2500],
-  [["battery"], undefined, false, 2500],
-  [["diagnostics"], undefined, false, 2500],
-  [["tires"], undefined, false, 1600],
-  [["tpms"], undefined, false, 800],
-  [["ppi"], undefined, false, 3600],
-  [["ac-diagnostic"], undefined, false, 3000],
-  [["tire-install"], "15-16", false, 2000],
-  [["tire-install"], "17-18", true, 2800],
-  [["tire-install"], "21+", false, 3200],
-  [["tire-install", "brakes"], "17-18", false, 4900],
-  [["oil-change", "brakes", "battery"], undefined, false, 7500],
+  [["oil-change"], undefined, false, 2874],
+  [["brakes"], undefined, false, 2874],
+  [["battery"], undefined, false, 2874],
+  [["diagnostics"], undefined, false, 2874],
+  [["tires"], undefined, false, 1840],
+  [["tpms"], undefined, false, 920],
+  [["ppi"], undefined, false, 4139],
+  [["ac-diagnostic"], undefined, false, 3449],
+  [["tire-install"], "15-16", false, 2300],
+  [["tire-install"], "17-18", true, 3219],
+  [["tire-install"], "21+", false, 3679],
+  [["tire-install", "brakes"], "17-18", false, 5634],
+  [["oil-change", "brakes", "battery"], undefined, false, 8623],
 ];
 for (const [slugs, rim, rf, want] of table) {
   const got = depositCents(slugs, 20, rim as never, rf);

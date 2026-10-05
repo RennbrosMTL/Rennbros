@@ -10,6 +10,9 @@
  *   NEXT_PUBLIC_SQUARE_APP_ID       for the card field (Web Payments SDK)
  *   NEXT_PUBLIC_SQUARE_LOCATION_ID  same location id, exposed to the card field
  *   NEXT_PUBLIC_SQUARE_ENVIRONMENT  "production" to load Square's live card field
+ *   SQUARE_APP_SECRET          the app's OAuth secret: lets the site hold a
+ *                              customer-level token so bookings arrive in
+ *                              Square as requests (see squareAuth.ts)
  *
  * These live in Netlify: Site configuration > Environment variables. The
  * NEXT_PUBLIC_ ones are read at build time, so redeploy after changing them.
@@ -20,6 +23,7 @@
 import { bookingProvider, parseServiceMap } from "./square";
 import { bySlug, services } from "@/lib/services";
 import { business } from "@/lib/business";
+import { bookingToken } from "./squareAuth";
 
 const env = process.env;
 
@@ -45,6 +49,7 @@ export const provider = () =>
       teamMemberId: env.SQUARE_TEAM_MEMBER_ID,
       serviceVariations: parseServiceMap(env.SQUARE_SERVICES),
       probeService: env.SQUARE_PROBE_SERVICE,
+      bookingToken: env.SQUARE_APP_SECRET ? bookingToken : undefined,
     },
     timing,
     schedule,

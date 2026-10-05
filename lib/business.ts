@@ -16,16 +16,16 @@ export const business = {
   domain: "RennBros.com",
 
   area: {
-    /** Confirmed 2026-10-01: Rigaud to Dorval, Île Bizard to Valleyfield, plus
-     *  Dollard-des-Ormeaux, Les Cèdres and Pointe-des-Cascades. */
+    /** Confirmed 2026-10-01: Rigaud to Dorval, down to Valleyfield, plus
+     *  Dollard-des-Ormeaux, Les Cèdres and Pointe-des-Cascades. Île Bizard
+     *  removed 2026-10-04 at the owner's request. */
     isPlaceholder: false,
-    corners: { west: "Rigaud", north: "Île Bizard", east: "Dorval", south: "Valleyfield" },
+    corners: { west: "Rigaud", north: "Pierrefonds", east: "Dorval", south: "Valleyfield" },
     towns: [
       "Baie-D'Urfé",
       "Beaconsfield",
       "Dorval",
       "Hudson",
-      "Île Bizard",
       "Kirkland",
       "L'Île-Perrot",
       "Les Cèdres",
@@ -67,14 +67,17 @@ export const business = {
     leadTimeHours: 24,
     /** Travel is in the buffer now; nothing is added to the time shown. */
     travelMinutes: 0,
-    /** Percent of the pre-tax estimate taken as a deposit when booking online
-     *  (20 = 20%), confirmed 2026-10-01. Refundable in full when cancelled at
-     *  least 24 h before the arrival window. null turns the deposit off. */
+    /** Percent of the estimate WITH taxes taken as a deposit when booking
+     *  online (20 = 20%), owner's rule 2026-10-04. Refundable in full when
+     *  cancelled at least 24 h before the visit. null turns the deposit off. */
     depositPercent: 20 as number | null,
     /** DRAFT — proposed in the booking terms (lib/i18n pages.terms), for the
      *  owner to confirm. */
     cancellationHours: 24 as number | null,
   },
+
+  /** Québec sales taxes on the estimate: GST 5% + QST 9.975%. */
+  tax: { gst: 0.05, qst: 0.09975 },
 
   warrantyMonths: 12,
 

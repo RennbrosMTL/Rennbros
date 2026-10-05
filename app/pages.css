@@ -405,6 +405,7 @@
 @media (min-width: 68.75em) { .doc { margin-left: max(0px, calc((100vw - var(--max)) / 2)); } }
 .doc section { display: grid; gap: 0.6rem; padding-top: 1.5rem; border-top: 1px solid var(--color-rule); }
 .doc section p { color: var(--color-ink-2); }
+.doc__links { margin: 0; padding-left: 1.1rem; list-style: disc; display: grid; gap: 0.35rem; color: var(--color-ink-2); }
 
 /* --- Received ---------------------------------------------------------------------- */
 .done { padding-block: clamp(3rem, 8vw, 6.5rem); }
@@ -501,3 +502,20 @@
   .co__secure .link { grid-column: 1 / -1; justify-self: start; }
   .co__pay-amount { font-size: 1.75rem; }
 }
+
+/* Booking notices: office-parking consent and out-of-area (native <dialog>). */
+.notice { width: min(32rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; margin: auto; padding: 1.4rem 1.4rem 1.2rem; border: 1px solid var(--color-rule); border-top: 3px solid var(--color-red); border-radius: var(--radius-card); background: var(--color-card); color: var(--color-ink); box-shadow: var(--shadow-lg); }
+.notice::backdrop { background: rgb(var(--shadow-rgb) / 0.45); }
+.notice > * + * { margin-top: 0.8rem; }
+.notice p { color: var(--color-ink-2); font-size: 0.95rem; line-height: 1.5; }
+.notice__head { display: flex; align-items: center; gap: 0.6rem; color: var(--color-red); }
+.notice__title { flex: 1; margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; color: var(--color-ink); }
+.notice__x { width: 2.25rem; height: 2.25rem; border: 0; border-radius: 50%; background: var(--color-mist); color: var(--color-ink-2); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+.notice__x:hover { background: var(--color-rule); }
+.notice__points { margin: 0; padding-left: 1.1rem; list-style: disc; display: grid; gap: 0.3rem; color: var(--color-ink-2); font-size: 0.92rem; }
+.notice__agree { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.75rem 0.85rem; border-radius: var(--radius-sm); background: var(--color-paper); font-size: 0.92rem; color: var(--color-ink); cursor: pointer; }
+.notice__agree input { width: 1.15rem; height: 1.15rem; margin-top: 0.1rem; accent-color: var(--color-red); flex: none; }
+.notice__phone { font-size: 1.35rem; font-weight: 600; }
+.notice__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; padding-top: 0.2rem; }
+.notice__actions .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+@media (max-width: 30em) { .notice__actions .btn { flex: 1 1 auto; justify-content: center; } }
