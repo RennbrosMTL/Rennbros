@@ -504,7 +504,7 @@
 }
 
 /* Booking notices: office-parking consent and out-of-area (native <dialog>). */
-.notice { width: min(32rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; margin: auto; padding: 1.4rem 1.4rem 1.2rem; border: 1px solid var(--color-rule); border-top: 3px solid var(--color-red); border-radius: var(--radius-card); background: var(--color-card); color: var(--color-ink); box-shadow: var(--shadow-lg); }
+.notice { width: min(32rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; margin: auto; padding: 1.4rem 1.4rem 1.2rem; border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-card); color: var(--color-ink); box-shadow: var(--shadow-lg); }
 .notice::backdrop { background: rgb(var(--shadow-rgb) / 0.45); }
 .notice > * + * { margin-top: 0.8rem; }
 .notice p { color: var(--color-ink-2); font-size: 0.95rem; line-height: 1.5; }
