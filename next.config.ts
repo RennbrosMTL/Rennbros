@@ -27,8 +27,28 @@ const nextConfig: NextConfig = {
      the concept that goes live on RennBros.com (the launch guard says so).
      Set here, not in netlify.toml: pages are served by Next, not as files. */
   async headers() {
-    return [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }];
+    return [
+      { source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      {
+        // Security headers on every response. No full Content-Security-Policy
+        // (Square, Apple Pay, Google Pay, the map and the VIN reader load from
+        // their own domains); frame-ancestors alone stops other sites from
+        // framing the booking pages (clickjacking, look-alike wrappers).
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), usb=(), serial=(), bluetooth=(), browsing-topics=()" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-site" },
+        ],
+      },
+    ];
   },
+  /* Don't advertise the framework in every response. */
+  poweredByHeader: false,
   async redirects() {
     return [
       { source: "/en", destination: "/", permanent: true },

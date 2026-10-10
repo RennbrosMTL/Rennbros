@@ -4,6 +4,7 @@ import { depositCents, estimateOf, estimateWithTax } from "@/lib/booking/deposit
 import { checkout, DepositDeclined } from "@/lib/booking/checkout";
 import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
 import { isRim } from "@/lib/services";
+import { overLimit } from "@/lib/ratelimit";
 import { business } from "@/lib/business";
 import { dict, href, type Lang } from "@/lib/i18n";
 import { TIME_ZONE, SquareError, fits, type Slot, type Segment } from "@/lib/booking/square";
@@ -29,6 +30,8 @@ export async function POST(request: Request) {
   if (origin && new URL(origin).host !== new URL(request.url).host && new URL(origin).host !== request.headers.get("host")) {
     return new Response("Forbidden", { status: 403 });
   }
+  // A brake on bots: a real customer sends one or two requests an hour.
+  if (await overLimit(request, "book", 10)) return fail(request, "en", "rate_limited", 429, isJSON);
 
   let data: Record<string, unknown>;
   let serviceList: string[] = [];

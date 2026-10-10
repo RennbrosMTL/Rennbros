@@ -1,4 +1,5 @@
 import { MAX_BYTES, imageType, newPhotoId, photoStore, prunePhotos } from "@/lib/booking/photos";
+import { overLimit } from "@/lib/ratelimit";
 
 /** Upload one booking photo (the raw image as the body). Answers { id }. */
 export async function POST(request: Request) {
@@ -6,6 +7,8 @@ export async function POST(request: Request) {
   if (origin && new URL(origin).host !== new URL(request.url).host && new URL(origin).host !== request.headers.get("host")) {
     return new Response("Forbidden", { status: 403 });
   }
+  // A booking takes at most 4 photos; 20 an hour per visitor leaves room for retakes.
+  if (await overLimit(request, "photo", 20)) return json({ ok: false, error: "rate_limited" }, 429);
   const len = Number(request.headers.get("content-length") ?? 0);
   if (len > MAX_BYTES) return json({ ok: false, error: "too_big" }, 413);
   const body = new Uint8Array(await request.arrayBuffer());
